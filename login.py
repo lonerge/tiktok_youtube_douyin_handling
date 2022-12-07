@@ -674,9 +674,8 @@ if __name__ == '__main__':
     # print('result: ', result)
     # input('???:')
 
-    # login.tiktok_login('2726750297@qq.com', '2726750297@dl')
     # login.init_broswer(url='https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Dzh-CN%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=zh-CN&ec=65620', port='9898')
-    result = login.youtube_login(account='2726750297@qq.com', password='15755604457@Dl')
+    result = login.youtube_login(account=input('account: '), password=input('password: '))
     if result is True:
         login.youtube_upload(video_path='G:\\idm_download\\test1.mp4', title='beautiful girl')
     input('finally:::')
