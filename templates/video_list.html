@@ -1,0 +1,79 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title id="title_all">视频搬运工 1.0</title>
+<script src="static/js/jquery.min.js"></script>
+<link href="static/css/style.css" rel="stylesheet" type="text/css" media="all"/>
+<!-- Custom Theme files -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.5, maximum-scale=2.0, user-scalable=yes" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="test" />
+<!--google fonts-->
+<link href='//fonts.googleapis.com/css?family=Oxygen:400,700,300' rel='stylesheet' type='text/css'>
+<!--video -->
+<link href="static/css/jplayer.blue.monday.min.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="static/js/jquery.jplayer.min.js"></script>
+<script type="text/javascript">
+//<![CDATA[
+function Home() {
+        var temp = {'video_id': '7113737640612072737'}
+        $.ajax({
+			url:'/video',
+			data: temp,
+            type: 'GET',
+            dataType: 'text',
+            success: function (d) {
+                window.location.href="/video?video_id=7113737640612072737";
+            },
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				alert(errorThrown)
+			}
+		});
+    }
+
+$('#select_list').change(function(){
+    //获取option元素上的value值
+    var val = $(this).find('option:selected').val();
+    //条件判断
+    alert(val)
+})
+jQuery(function($) {
+  $('select').selectBoxIt({ defaultText: 'Testing', autoWidth: false });
+  $('form').removeClass('hidden');
+});
+</script>
+<!--//video-->
+</head>
+<body>
+<!---->
+<!--<h2>点击视频跳转</h2>-->
+<div class="title">
+    <h3>{{ data['message'] }}</h3>
+    <ul style="text-align: center">
+        <li><a class="btn btn-default" href="/video_list" style="color: beige">首页</a></li>
+        {% for index in data['page_index'] %}
+        <li class="hidden-xs"><a class="btn  btn-warm" href="/video_list?page={{ index }}" style="color: beige">{{ index }}</a></li>
+        {% endfor %}
+
+    </ul>
+    <ul>
+        {% for video in data['video_list'] %}
+		    <li style="width: 200px" onclick="window.location.href='/video?video_id={{ video["video_id"] }}'">
+            <img src="{{ video['video_pic'] }}" alt="" class="video_pic" style="height: 200px; width: 200px">
+            <p style="height: 21px">{{ video['has_handling'] }}</p>
+            <p style="color: black;height: 63px">{{ video['video_title'] }}</p>
+            <p style="height: 21px">观看次数：{{ video['video_watch_num'] }}</p>
+            </li>
+    	{% endfor %}
+    </ul>
+    <ul style="text-align: center">
+        <li><a class="btn btn-default" href="/video_list" style="color: beige">首页</a></li>
+        {% for index in data['page_index'] %}
+        <li class="hidden-xs"><a class="btn  btn-warm"  href="/video_list?page={{ index }}" style="color: beige">{{ index }}</a></li>
+        {% endfor %}
+
+    </ul>
+</div>
+</body>
+</html>

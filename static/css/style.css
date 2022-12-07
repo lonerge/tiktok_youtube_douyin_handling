@@ -1,0 +1,391 @@
+/*--
+Author: W3layouts
+Author URL: http://w3layouts.com
+License: Creative Commons Attribution 3.0 Unported
+License URL: http://creativecommons.org/licenses/by/3.0/
+--*/
+/* start editing from here */
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,dl,dt,dd,ol,nav ul,nav li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,footer,header,hgroup,menu,nav,output,ruby,section,summary,time,mark,audio,video{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;}
+article, aside, details, figcaption, figure,footer, header, hgroup, menu, nav, section {display: block;}
+ol,ul{list-style:none;margin:0;padding:0;}
+blockquote,q{quotes:none;}
+blockquote:before,blockquote:after,q:before,q:after{content:'';content:none;}
+table{border-collapse:collapse;border-spacing:0;}
+/* start editing from here */
+a{text-decoration:none;}
+.txt-rt{text-align:right;}/* text align right */
+.txt-lt{text-align:left;}/* text align left */
+.txt-center{text-align:center;}/* text align center */
+.float-rt{float:right;}/* float right */
+.float-lt{float:left;}/* float left */
+.clear{clear:both;}/* clear float */
+.pos-relative{position:relative;}/* Position Relative */
+.pos-absolute{position:absolute;}/* Position Absolute */
+.vertical-base{	vertical-align:baseline;}/* vertical align baseline */
+.vertical-top{	vertical-align:top;}/* vertical align top */
+.underline{	padding-bottom:5px;	border-bottom: 1px solid #eee; margin:0 0 20px 0;}/* Add 5px bottom padding and a underline */
+nav.vertical ul li{	display:block;}/* vertical menu */
+nav.horizontal ul li{	display: inline-block;}/* horizontal menu */
+img{max-width:100%;}
+/*end reset*/
+/*--login start here--*/
+
+/*视频列表页面css*/
+.title {
+            width: 1000px;
+            margin: auto;
+        }
+li {
+    list-style: none;
+    display: inline-block;
+    padding: 10px;
+    margin: 5px;
+}
+h3 {
+    font-size: 18px;
+    line-height: 40px;
+}
+img.video_pic {
+    border-radius: 10px;
+    height: 200px;
+    width: 200px;
+}
+ul li:hover {
+    box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.1), 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+}
+p:nth-child(2) {
+    color: grey;
+    font-weight: bolder;
+}
+p:nth-child(3) {
+    color: greenyellow;
+}
+p:nth-child(4) {
+    color: #06329b;
+}
+/*视频列表页面css*/
+
+
+
+ body{
+   font-family: 'Oxygen', sans-serif;
+   font-size: 100%;
+   background:#3d6478; 
+}
+a {
+  text-decoration: none;
+}
+a:hover {
+  transition: 0.5s all;
+  -webkit-transition: 0.5s all;
+  -moz-transition: 0.5s all;
+  -o-transition: 0.5s all;
+}
+/*--header start here--*/
+h2 {
+    text-align: center;
+    color: #fff;
+    font-size: 3em;
+    margin-top: 2em;
+    font-family: 'Oxygen', sans-serif;
+}
+.select_div{
+    text-align: center;
+    border-radius: 1px;
+    /*box-shadow: 0 0 1px #ccc;*/
+    position: relative;
+}
+select{
+    text-align: center;
+    color: #00c6d7;
+    font-size: 1em;
+    /*margin-top: 0em;*/
+}
+
+/*---radio buttons--*/
+.review-right-main fieldset {
+	display: inline-block;
+	vertical-align: middle;
+	margin: 1em 0em 0.5em 0em;
+}
+.review-right-main .rating {
+	margin-bottom: 4px;
+	font-size: 15px;
+	line-height: 27px;
+	color: #404040;
+}
+.review-right-main .rating:last-child {
+	margin-bottom: 0;
+}
+.review-right-main .rating input {
+	position: absolute;
+	left: -9999px;
+}
+.review-right-main .rating label {
+	 background: url(../images/star-g.png)0 0px;
+	display: block;
+	float: right;
+	height: 17px;
+	margin: 5px 2px;
+	padding: 0 0px;
+	font-size: 17px;
+	line-height: 17px;
+	cursor: pointer;
+}
+.icon-star:before {
+  content: "";
+   background: url(../images/star-g.png)0 0px;
+   width: 15px;
+   display: block;
+}
+.icon-star-empty:before {
+  content: "\f006";
+}
+.review-right-main [class^="icon-"] {
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  -webkit-font-smoothing: antialiased;
+}
+.review-right-main .radio input + i:after {
+	background: url(../images/star.png)0px 0px;
+}
+.review-right-main .checkbox input + i:after {
+  background: url(../images/star-g.png)0px 0px;
+}
+.review-right-main .radio input:checked + i,
+.review-right-main .checkbox input:checked + i,
+.review-right-main .toggle input:checked + i {
+	background: url(../images/star.png)0px 0px;
+}
+.review-right-main .rating input:checked ~ label {
+	background: url(../images/star.png)0px 0px;	
+}
+.review-right-main .radio:hover i
+{
+	border-color: #8dc9e5;
+}
+.review-right-main .rating input + label:hover,
+.review-right-main .rating input + label:hover ~ label {
+	 background: url(../images/star.png)0px 0px;
+}
+/*--*/
+.movie-review-main {
+    width: 35%;
+    margin: 3em auto 0em;
+}
+.review-left {
+    float: left;
+    width: 100%;
+    border-radius: 5px 0px 0px 5px;
+}
+.review-right {
+    float: right;
+    width: 100%;
+    background: #fff;
+    border-radius: 0px 5px 5px 0px;
+}
+.review-right-main {
+    padding: 0em 1em;
+}
+
+.review-right-main h1 {
+    font-size: 1.5em;
+    color: #000;
+    font-weight: bolder;
+    padding: 1em 0em 0.2em 0em;
+    font-family: 'Oxygen', sans-serif;
+}
+.review-right-main p {
+    font-size: 0.8em;
+    color: #999;
+    line-height: 1.8em;
+}
+.vertion-buttons a {
+    background: #ebebeb;
+    padding: 8px;
+    font-size: 0.9em;
+    display: inline-block;
+    color: #858484;
+    border-radius: 3px;
+}
+.app-box {
+    display: inline-block;
+    float: left;
+    width: 33.3%;
+    /*padding: 1.4em 0em;*/
+}
+.app-box.red {
+    background:#fe724f;
+    text-align: center;
+    cursor: pointer;
+}
+.app-box.green {
+    background:#4aba80;
+    text-align: center;
+    cursor: pointer;
+    /*height: 100%;*/
+    border-radius: 0px 0px 4px 0px;
+}
+.vertion-buttons {
+    margin: 1.2em 0em 2em 0em;
+}
+.app-box.violet {
+    background:#a85af9;
+    text-align: center;
+    cursor: pointer;
+}
+.app-box.red:hover {
+    background: #5B5461;
+    transition: 0.5s all;
+  -webkit-transition: 0.5s all;
+  -moz-transition: 0.5s all;
+  -o-transition: 0.5s all;
+}
+.app-box.green:hover {
+    background:#5B5461;
+    transition: 0.5s all;
+  -webkit-transition: 0.5s all;
+  -moz-transition: 0.5s all;
+  -o-transition: 0.5s all;
+}
+.app-box.violet:hover {
+    background:#5B5461;
+    transition: 0.5s all;
+  -webkit-transition: 0.5s all;
+  -moz-transition: 0.5s all;
+  -o-transition: 0.5s all;
+}
+span.roundplay-bwn {
+	background: url(../images/play.png)no-repeat;
+	width: 65px;
+	height: 65px;
+	display: inline-block;
+	outline: none;
+}
+span.potrul-line {
+	background: #dddbdb;
+	width: 1px;
+	height: 11px;
+	display: inline-block;
+	margin: 0px 5px 0px 2px;
+	vertical-align: middle;
+}
+.video-play-bwn {
+    margin: 8.5em 0em 0em 6em;
+}
+.copy-right {
+    text-align: center;
+    margin: 10em 0em 3em 0em;
+}
+.copy-right p {
+    color: #fff;
+    font-size: 0.9em;
+}
+.copy-right p a{
+	  color:#fe724f;
+}
+.copy-right p a:hover{
+	 color: #fff;
+}
+/*--media quries start here--*/
+@media(max-width:1440px){
+.vertion-buttons a {
+    background: #ebebeb;
+    padding: 8px 4px;
+}
+.movie-review-main {
+    width: 40%;
+}
+}
+@media(max-width:1024px){
+.movie-review-main {
+    width: 50%;
+}
+}
+@media(max-width:768px){
+.movie-review-main {
+    width: 66%;
+}
+}
+@media(max-width:736px){
+.vertion-buttons a {
+    background: #ebebeb;
+    padding: 9px 4px;
+    font-size: 0.8em;
+}
+}
+@media(max-width:667px){
+	.movie-review-main {
+    width: 77%;
+}
+}
+@media(max-width:640px){
+.movie-review-main {
+    width: 80%;
+}
+}
+@media(max-width:600px){
+.vertion-buttons a {
+    padding: 10px 4px;
+    font-size: 0.8em;
+}	
+}
+@media(max-width:480px){
+.movie-review-main {
+    width: 88%;
+}
+.review-left {
+    background: url(../images/cartoon.jpg)no-repeat 0px 0px;
+    background-size: cover;
+    min-height: 298px;
+    float: none;
+    width: 100%;
+    border-radius: 5px 5px 0px 0px;
+}
+.review-right {
+    float: none;
+    width: 100%;
+    background: #fff;
+     margin-top: 1em;
+    border-radius: 0px 0px 5px 5px;
+}
+.app-box.violet {
+    border-radius: 0px 0px 0px 4px;
+}
+.video-play-bwn {
+    margin: 0em 0em 0em 0em;
+    padding: 7em 0em 0em 10em;
+}
+h2 {
+    font-size: 2em;
+    margin-top: 1em;
+}
+.copy-right {
+    margin: 5em 0em 3em 0em;
+}
+}
+@media(max-width:320px){
+.movie-review-main {
+    margin: 4em auto 0em;
+}
+.video-play-bwn {
+    padding: 7em 0em 0em 6em;
+}
+.copy-right {
+    margin: 3em 0em 2em 0em;
+}
+.vertion-buttons {
+    margin: 0.3em 0em 1em 0em;
+}
+.review-right-main h1 {
+    padding: 0.5em 0em 0.2em 0em;
+}
+h2 {
+    font-size: 1.8em;
+}
+.movie-review-main {
+    margin: 1.5em auto 0em;
+}
+}

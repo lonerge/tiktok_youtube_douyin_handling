@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>checkbox实现单选效果</title>
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-1.7.2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('.checkbox').click(function () {
+            var typeThis = typeof ($(this).attr("checked"));
+            switch (typeThis) {
+                case "string":
+                    if ($(this).attr("checked").toLowerCase()=="checked") {
+                        $('.checkbox').each(function () {
+                            $(this).removeAttr("checked");
+                        });
+                        $(this).attr("checked",true);
+                    }
+                    break;
+                case "undefined":
+                    $('.checkbox').each(function () {
+                        $(this).removeAttr("checked");
+                    });
+                    break;
+            }
+        });
+
+    });
+    function test() {
+        var choose = document.querySelector('[checked="checked"]').getAttribute('value');
+        alert(choose)
+    }
+</script>
+</head>
+<body>
+    <input class="checkbox" type="checkbox" value="youtube" checked="checked"/>youtube
+    <input class="checkbox" type="checkbox" value="tiktok" />tiktok
+</body>
+</html>

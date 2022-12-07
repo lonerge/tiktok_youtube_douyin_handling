@@ -1,0 +1,314 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>视频搬运工 1.0</title>
+<script src="static/js/jquery.min.js"></script>
+<link href="static/css/style.css" rel="stylesheet" type="text/css" media="all"/>
+<!-- Custom Theme files -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="test" />
+<!--google fonts-->
+<link href='//fonts.googleapis.com/css?family=Oxygen:400,700,300' rel='stylesheet' type='text/css'>
+<!--video -->
+<link href="static/css/jplayer.blue.monday.min.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="static/js/jquery.jplayer.min.js"></script>
+<div id="dataid" data="{{data}}" style="display:none"></div>
+<script type="text/javascript">
+// <![CDATA[
+var data = document.getElementById('dataid').getAttribute('data');
+var return_data = eval("("+data+")");
+// console.log(return_data)
+// var data = {{return_data}}
+$(document).ready(function(){
+	$("#jquery_jplayer_1").jPlayer({
+		ready: function () {
+			$(this).jPlayer("setMedia", {
+				oid: return_data["video_id"],
+				m4v: return_data["video_url"],
+				poster: return_data["video_pic"]
+			});
+		},
+		swfPath: "../../dist/jplayer",
+		supplied: "webmv, ogv, m4v",
+		size: {
+			width: "100%",
+			height: "360px",
+			cssClass: "jp-video-360p",
+		},
+		useStateClassSkin: true,
+		autoBlur: false,
+		smoothPlayBar: true,
+		keyEnabled: true,
+		remainingDuration: true,
+		toggleDuration: true
+	});
+	if (return_data['video_datafrom'] === '抖音'){
+		document.getElementById('account').setAttribute('style', 'color: darkred ; text-align: center');
+		document.getElementById('password').setAttribute('style', 'color: darkred ; text-align: center');
+		document.getElementById('change_div1').setAttribute('style', 'text-align: center ;display: none');
+		document.getElementById('checkbox_platform').setAttribute('style', 'color: darkred ; text-align: center');
+
+
+	}else if (return_data['video_datafrom'] === '%E6%8A%96%E9%9F%B3'){
+		document.getElementById('account').setAttribute('style', 'color: darkred ; text-align: center');
+		document.getElementById('password').setAttribute('style', 'color: darkred ; text-align: center');
+		document.getElementById('change_div1').setAttribute('style', 'text-align: center ;display: none');
+		document.getElementById('checkbox_platform').setAttribute('style', 'color: darkred ; text-align: center');
+	}
+	$('.checkbox').click(function () {
+            var typeThis = typeof ($(this).attr("checked"));
+            switch (typeThis) {
+                case "string":
+                    if ($(this).attr("checked").toLowerCase()=="checked") {
+                        $('.checkbox').each(function () {
+                            $(this).removeAttr("checked");
+                        });
+                        $(this).attr("checked",true);
+                    }
+                    break;
+                case "undefined":
+                    $('.checkbox').each(function () {
+                        $(this).removeAttr("checked");
+                    });
+                    break;
+            }
+        });
+
+});
+
+function refresh_pic() {
+		document.getElementById('login_pic').setAttribute('src', 'static/images/loading.gif');
+		var data_temp = {'timestamp': Date.now()};
+        $.ajax({
+            type: "POST",
+			data: data_temp,
+            url: '/refresh_login_pic',
+            dataType: "text",   // 期待后端返回数据的类型
+            success: function (param) {//返回数据根据结果进行相应的处理
+            	// var temp = JSON.parse(param);
+                // document.getElementById('login_pic').setAttribute('src', temp['url']);
+                document.getElementById('login_pic').setAttribute('src', param);
+            },
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+            	// debugger
+				// // 状态码
+				// console.log(XMLHttpRequest.status);
+				// // 状态
+				// console.log(XMLHttpRequest.readyState);
+				// // 错误信息
+				// console.log(textStatus);
+				// __hideLoading();
+				document.getElementById('login_pic').setAttribute('src', 'static/images/error.png');
+            	alert('刷新二维码异常! 请点击二维码重试')
+				// document.getElementById('login_pic').setAttribute('src', 'error');
+			}
+        });
+    }
+function publish() {
+		document.getElementById('login_pic').setAttribute('src', 'static/images/loading.gif');
+		var video_id = return_data["video_id"];
+		var title = document.getElementById("myInput").value;
+		var account = document.getElementById("myInput_account").value;
+		var password = document.getElementById("myInput_password").value;
+		var video_url = return_data["video_url"];
+		var video_datafrom = return_data["video_datafrom"];
+		if (video_datafrom === '抖音'){
+			var publish_platform = document.querySelector('[checked="checked"]').getAttribute('value');
+		}else {
+			publish_platform = 'douyin'
+		}
+		var data_temp = {'video_id': video_id, 'title': title, 'video_url': video_url, 'video_datafrom': video_datafrom, 'account': account, 'password': password, 'publish_platform': publish_platform};
+        $.ajax({
+            type: "POST",
+			data: data_temp,
+            url: '/publish',
+			// async: false,
+            dataType: "text",   // 期待后端返回数据的类型
+            success: function (data) {//返回数据根据结果进行相应的处理
+            	if (data === 'success') {
+					document.getElementById('login_pic').setAttribute('src', 'static/images/success.png');
+					alert('搬运成功')
+				  } else if (data === 'hcaptcha'){
+					document.getElementById('login_pic').setAttribute('src', 'static/images/loading.gif');
+					document.getElementById('hcaptcha_div').setAttribute('style', 'text-align: center');
+					document.getElementById('change_div1').setAttribute('style', 'text-align: center ;display: none');
+					document.getElementById('change_div2').setAttribute('style', 'text-align: center ;display: none');
+					document.getElementById('change_div3').setAttribute('style', 'text-align: center ;display: none');
+					alert(JSON.stringify('请输入验证码'))
+				  }
+            		else{
+					document.getElementById('login_pic').setAttribute('src', 'static/images/error.png');
+					alert(JSON.stringify(data))
+				  }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+				document.getElementById('login_pic').setAttribute('src', 'static/images/error.png');
+				alert('服务异常!!!')
+            }
+        });
+    }
+function Hcaptcha() {
+		var code = document.getElementById("hcaptcha").value;
+		var video_id = return_data["video_id"];
+		var temp = {'code': code, 'video_id': video_id}
+        $.ajax({
+			url:'/hcaptcha',
+			data:temp,
+            type: 'POST',
+            dataType: 'text',
+            // async: true,
+            success: function (data) {
+				document.getElementById('hcaptcha_div').setAttribute('style', 'text-align: center ;display: none');
+				document.getElementById('change_div1').setAttribute('src', 'text-align: center');
+				document.getElementById('change_div2').setAttribute('src', 'text-align: center');
+				document.getElementById('change_div3').setAttribute('src', 'text-align: center');
+				if (data === 'success') {
+					document.getElementById('login_pic').setAttribute('src', 'static/images/success.png');
+					alert('搬运成功')
+				  } else{
+					document.getElementById('login_pic').setAttribute('src', 'static/images/error.png');
+					alert(JSON.stringify(data))
+				}
+            },
+			error: function (errorThrown) {
+				document.getElementById('hcaptcha_div').setAttribute('style', 'text-align: center ;display: none');
+				document.getElementById('change_div1').setAttribute('src', 'text-align: center');
+				document.getElementById('change_div2').setAttribute('src', 'text-align: center');
+				document.getElementById('change_div3').setAttribute('src', 'text-align: center');
+				alert(errorThrown)
+			}
+		});
+    }
+function Download() {
+		document.getElementById('jp_poster_0').setAttribute('src', 'static/images/loading.gif');
+        $.ajax({
+			url:'/download_video',
+			data:return_data,
+            type: 'POST',
+            dataType: 'text',
+            // async: true,
+            success: function (data) {
+				document.getElementById('jp_video_0').setAttribute('src', 'static/videos/'+data);
+				alert('下载'+JSON.stringify(data)+'成功! 点击播放按钮即可播放!!!!!')
+            },
+			error: function () {
+				alert('下载失败! 请稍后重试或点击下一个视频...')
+			}
+		});
+    }
+</script>
+<!--//video-->
+</head>
+<body>
+<!---->
+<h2>搬运你喜欢的视频</h2>
+<h3 size="10px" align="center" style="color: #00b38a"> 当前视频id: {{ video_id }} </h3>
+
+<div class="movie-review">
+	<div class="movie-review-main">
+		<div class="review-left">
+			<div class="video">
+	    				<div class="content-middle-top2">
+		         <div class=" video-grid">
+					<div id="jp_container_1" class="jp-video jp-video-360p" role="application" aria-label="media player">
+						<div class="jp-type-single">
+							<div id="jquery_jplayer_1" class="jp-jplayer"></div>
+							<div class="jp-gui">
+								<div class="jp-video-play">
+									<button class="jp-video-play-icon" role="button" tabindex="0">play</button>
+								</div>
+								<div class="jp-interface">
+									<div class="jp-progress">
+										<div class="jp-seek-bar">
+											<div class="jp-play-bar"></div>
+										</div>
+									</div>
+									<div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
+									<div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
+									<div class="jp-controls-holder">
+										<div class="jp-controls">
+											<button class="jp-play" role="button" tabindex="0">play</button>
+											<button class="jp-stop" role="button" tabindex="0">stop</button>
+										</div>
+										<div class="jp-volume-controls">
+											<button class="jp-mute" role="button" tabindex="0">mute</button>
+											<button class="jp-volume-max" role="button" tabindex="0">max volume</button>
+											<div class="jp-volume-bar">
+												<div class="jp-volume-bar-value"></div>
+											</div>
+										</div>
+										<div class="jp-toggles">
+											<button class="jp-repeat" role="button" tabindex="0">repeat</button>
+											<button class="jp-full-screen" role="button" tabindex="0">full screen</button>
+										</div>
+									</div>
+
+								</div>
+							</div>
+							<div class="jp-no-solution">
+								<span>Update Required</span>
+								To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
+							</div>
+						</div>
+					</div>
+				 </div>
+	            </div>
+	    			</div>
+		</div>
+		<div class="review-right">
+			<div class="review-right-main">
+				<div style="text-align: center; color: darkred; display: none" id="hcaptcha_div">
+					<input type="text" placeholder="输入验证码" id="hcaptcha">
+					<button onclick="Hcaptcha();" style="color: darkred">确定</button>
+				</div>
+				<div style="text-align: center" id="change_div1">
+					<img src="{{ login_pic_url }}"  alt="" height="200px" width="200px" id="login_pic" class="loading" onclick="refresh_pic();">
+					<div style="color: darkred ; text-align: center" onclick="refresh_pic();">1.二维码登录(点击二维码刷新)</div>
+				</div>
+				<br>
+				<div style="color: darkred ; text-align: center; display: none" id="checkbox_platform">
+					youtube(google账号密码登录); tiktok(邮箱登录)
+					<br>
+					<br>
+					发布平台:
+					<input class="checkbox" type="checkbox" value="youtube" checked="checked"/>youtube
+					<input class="checkbox" type="checkbox" value="tiktok" />tiktok
+				</div>
+				<div style="color: darkred ; text-align: center; display: none" id="account">
+					邮箱: <input type="text" placeholder="" id="myInput_account" style="text-align: center; color: darkred">
+				</div>
+				<br>
+				<div style="color: darkred ; text-align: center; display: none" id="password">
+					密码: <input type="text" placeholder="" id="myInput_password" style="text-align: center; color: darkred">
+				</div>
+				<div style="color: darkred ; text-align: center" id="change_div2">
+								<br>
+								标题: <input type="text" placeholder="编辑你的视频标题" id="myInput" style="text-align: center; color: darkred">
+				</div>
+				<br>
+	    	 </div>
+	    	 <div class="color-boxs" style="text-align: center" id="change_div3">
+				  <button class="app-box violet" style="text-align: center">
+					  <p style="color: darkred; height: 30px">合并视频 音频</p>
+	    	   	  </button>
+				 <div class="app-box red" >
+	    	   	  	<img src="static/images/like.png"  alt="" height="32px">
+	    	   	  </div>
+	    	   	  <button  class="app-box green"  style="text-align: center" onclick="publish();">
+					  <p style="color: darkred; height: 30px">点击发布视频</p>
+	    	   	  </button>
+	    	   	 <div class="clear"> </div>
+	    	   </div>
+		</div>
+	  <div class="clear"> </div>
+	</div>
+</div>
+<!--<div class="copy-right">-->
+<!--			<p> test  <a href="" target="_blank">  Home </a></p>-->
+<!--</div>-->
+
+<!---->
+</body>
+</html>

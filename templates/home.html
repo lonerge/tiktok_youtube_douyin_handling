@@ -1,0 +1,251 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title id="title_all">视频搬运工 1.0</title>
+<script src="static/js/jquery.min.js"></script>
+<link href="static/css/style.css" rel="stylesheet" type="text/css" media="all"/>
+<!-- Custom Theme files -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=2.0, user-scalable=yes" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<meta name="keywords" content="test" />
+<!--google fonts-->
+<link href='//fonts.googleapis.com/css?family=Oxygen:400,700,300' rel='stylesheet' type='text/css'>
+<!--video -->	
+<link href="static/css/jplayer.blue.monday.min.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="static/js/jquery.jplayer.min.js"></script>
+<!--<script src="static/js/jquery.min.js"></script>-->
+<div id="dataid" data="{{data}}" style="display:none"></div>
+<script type="text/javascript">
+//<![CDATA[
+var data_ = document.getElementById('dataid').getAttribute('data');
+var return_data = eval("("+data_+")");
+// console.log(return_data)
+// console.log(data_)
+// var data = {{return_data}}
+$(document).ready(function(){
+	document.getElementById('video_info').innerHTML='当前视频id: '+return_data['video_id'];
+	document.getElementById('keywords').innerHTML=return_data['keywords'];
+	document.getElementById('video_datafrom').innerHTML=return_data['video_datafrom'];
+	document.getElementById('video_watch_num').innerHTML='播放量: '+return_data['video_watch_num'];
+	document.getElementById('video_title').innerHTML=return_data['video_title'];
+	temp = {'video_id': return_data['video_id']}
+	// $.ajax({
+	// 	url: '/get_video_list',
+	// 	data: temp,
+	// 	type: 'POST',
+	// 	dataType: 'text',
+	// 	success: function (html) {
+	// 		document.getElementById('select_list').innerHTML=html;
+	// 	},
+	// 	error: function (XMLHttpRequest, textStatus, errorThrown) {
+	// 		alert(errorThrown)
+	// 	}
+	// })
+	$("#jquery_jplayer_1").jPlayer({
+		ready: function () {
+			$(this).jPlayer("setMedia", {
+				oid: return_data["video_id"],
+				m4v: return_data["video_url"],
+				poster: return_data['video_pic']
+			});
+		},
+		swfPath: "../../dist/jplayer",
+		supplied: "webmv, ogv, m4v",
+		size: {
+			width: "100%",
+			height: "360px",
+			cssClass: "jp-video-360p",
+		},
+		useStateClassSkin: true,
+		autoBlur: false,
+		smoothPlayBar: true,
+		keyEnabled: true,
+		remainingDuration: true,
+		toggleDuration: true
+	});
+});
+
+$('#select_list').change(function(){
+    //获取option元素上的value值
+    var val = $(this).find('option:selected').val();
+    //条件判断
+    alert(val)
+})
+
+
+function Handling() {
+		document.getElementById('jp_poster_0').setAttribute('src', 'static/images/loading.gif');
+        $.ajax({
+			url:'/pre_handling',
+			data: return_data,
+            type: 'POST',
+            dataType: 'text',
+            success: function (d) {
+                window.location.href="handling";
+				// alert('1111')
+            },
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				// debugger
+				// // 状态码
+				// console.log(XMLHttpRequest.status);
+				// // 状态
+				// console.log(XMLHttpRequest.readyState);
+				// // 错误信息
+				// console.log(textStatus);
+				// __hideLoading();
+				// document.getElementById('title_all').html('视频搬运工')
+				alert(errorThrown)
+				// alert('跳转到搬运页面异常!!!')
+			}
+		});
+    }
+
+function Download() {
+		document.getElementById('jp_poster_0').setAttribute('src', 'static/images/loading.gif');
+		// var temp =
+        $.ajax({
+			url:'/download_video',
+			data: return_data,
+			dataType: 'text',
+			// contentType:"application/json;charset=utf-8",
+            type: 'POST',
+			// async: false,
+			// crossDomain: true,
+            success: function (data) {
+				document.getElementById('jp_video_0').setAttribute('src', 'static/videos/'+data);
+				alert('下载'+JSON.stringify(data)+'成功! 点击播放按钮即可播放!!!!!')
+            },
+			error: function (XMLHttpRequest, textStatus, errorThrown) {
+				//  debugger
+				// // 状态码
+				// console.log(XMLHttpRequest.status);
+				// // 状态
+				// console.log(XMLHttpRequest.readyState);
+				// // 错误信息
+				// console.log(textStatus);
+				// __hideLoading();
+				alert(errorThrown)
+				// alert('下载失败! 请稍后重试或点击下一个视频...')
+			}
+		});
+    }
+jQuery(function($) {
+  $('select').selectBoxIt({ defaultText: 'Testing', autoWidth: false });
+  $('form').removeClass('hidden');
+});
+</script>
+<!--//video-->
+</head>
+<body>
+<!---->
+<h2>选择你喜欢的视频</h2>
+<h3 size="10px" align="center" id="video_info" style="color: #00b38a"> </h3>
+<!--<div class="select_div">-->
+<!--    <select name="" id="select_list" >-->
+<!--    </select>-->
+<!--</div>-->
+
+<div class="movie-review">
+	<div class="movie-review-main">
+		<div class="review-left">
+			<div class="video">
+	    				<div class="content-middle-top2">
+		         <div class=" video-grid">
+					<div id="jp_container_1" class="jp-video jp-video-360p" role="application" aria-label="media player">
+						<div class="jp-type-single">
+							<div id="jquery_jplayer_1" class="jp-jplayer"></div>
+							<div class="jp-gui">
+								<div class="jp-video-play">
+									<button class="jp-video-play-icon" role="button" tabindex="0">play</button>
+								</div>
+								<div class="jp-interface">
+									<div class="jp-progress">
+										<div class="jp-seek-bar">
+											<div class="jp-play-bar"></div>
+										</div>
+									</div>
+									<div class="jp-current-time" role="timer" aria-label="time">&nbsp;</div>
+									<div class="jp-duration" role="timer" aria-label="duration">&nbsp;</div>
+									<div class="jp-controls-holder">
+										<div class="jp-controls">
+											<button class="jp-play" role="button" tabindex="0">play</button>
+											<button class="jp-stop" role="button" tabindex="0">stop</button>
+										</div>
+										<div class="jp-volume-controls">
+											<button class="jp-mute" role="button" tabindex="0">mute</button>
+											<button class="jp-volume-max" role="button" tabindex="0">max volume</button>
+											<div class="jp-volume-bar">
+												<div class="jp-volume-bar-value"></div>
+											</div>
+										</div>
+										<div class="jp-toggles">
+											<button class="jp-repeat" role="button" tabindex="0">repeat</button>
+											<button class="jp-full-screen" role="button" tabindex="0">full screen</button>
+										</div>
+									</div>
+									
+								</div>
+							</div>
+							<div class="jp-no-solution">
+								<span>Update Required</span>
+								To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
+							</div>
+						</div>
+					</div>
+				 </div>
+	            </div>
+	    			</div>
+		</div>
+		<div class="review-right">
+			<div class="review-right-main">
+			<h1 id="video_title"></h1>
+			<p style="color: rgb(245,70,51);font-size: 16px" id="video_watch_num">  </p>
+			<!---->
+			 <fieldset>	
+			       <section>					
+						<div class="rating">
+							<input type="radio" name="stars-rating" id="stars-rating-5">
+							<label for="stars-rating-5"><i class="icon-star"></i></label>
+							<input type="radio" name="stars-rating" id="stars-rating-4">
+							<label for="stars-rating-4"><i class="icon-star"></i></label>
+							<input type="radio" name="stars-rating" id="stars-rating-3">
+							<label for="stars-rating-3"><i class="icon-star"></i></label>
+							<input type="radio" name="stars-rating" id="stars-rating-2">
+							<label for="stars-rating-2"><i class="icon-star"></i></label>
+							<input type="radio" name="stars-rating" id="stars-rating-1">
+							<label for="stars-rating-1"><i class="icon-star"></i></label>						
+						</div>												
+					</section>
+			</fieldset>		
+	    	   <div class="vertion-buttons">
+	    	   	 <a id="video_datafrom"></a>
+	    	   	 <a id="keywords"></a>
+	    	   </div>
+				<div class="vertion-buttons">
+				 <a >若无法播放, 点击下载按钮, 下载后即可预览视频</a>
+			   </div>
+	    	 </div>
+	    	 <div class="color-boxs">
+	    	   	  <button type="button" class="app-box violet"  onclick="Download();">
+					  <img src="static/images/download.png"  alt="" style="width: 40px; height: 40px" id="download_video">
+	    	   	  </button>
+	    	   	  <button type="button" class="app-box red" onclick="Handling();">
+	    	   	  	<img src="static/images/like.png"  alt="" style="width: 40px; height: 40px">
+	    	   	  </button>
+	    	   	  <button type="button" class="app-box green">
+	    	   	  	<img src="static/images/next.png"  alt="" style="width: 40px; height: 40px">
+	    	   	  </button>
+	    	   	 <div class="clear"> </div>
+	    	   </div>
+		</div>
+	  <div class="clear"> </div>
+	</div>
+</div>
+<!--<div class="copy-right">-->
+<!--			<p> test  <a href="" target="_blank">  Home </a></p>-->
+<!--</div>-->
+
+<!---->
+</body>
+</html>
