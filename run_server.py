@@ -10,9 +10,15 @@ from login import Login
 import re
 import configparser
 import math
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 
 app = Flask(__name__)
+# 限流
+limiter = Limiter(app,
+                  key_func=get_remote_address,
+                  default_limits=["200 per day", "50 per hour"])
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
 api_config = config['Web_API']
