@@ -17,7 +17,7 @@ from flask_limiter.util import get_remote_address
 app = Flask(__name__)
 # 限流
 limiter = Limiter(app,
-                  key_func=get_remote_address,
+                 # key_func=get_remote_address,
                   default_limits=["200 per day", "50 per hour"])
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -42,6 +42,11 @@ LOGIN = None
 PREDATA = None
 PROXY = {"http": 'socks5://43.156.63.82:9494', "https": 'socks5://43.156.63.82:9494'}
 USEFUL_NUM = None
+
+
+@app.route('/')
+def root():
+    return redirect(url_for('video_list'))
 
 
 @app.route('/video_list')
@@ -96,7 +101,11 @@ def index():
         return_data = collection.find_one({'video_id': video_id})
         if return_data:
             del return_data['_id']
-            return render_template('home.html', data=json.dumps(return_data))
+            video_url = return_data['video_url']
+            if return_data['video_datafrom'] == '抖音' or 'douyin' in video_url:
+                video_url = video_url.replace('https://', 'http://')
+            print('video_url: ', video_url)
+            return render_template('home.html', data=json.dumps(return_data), origin_video_url=video_url)
         else:
             return 'no data '
     else:
@@ -144,7 +153,7 @@ def handling_video():
 
             return render_template('handling.html', data=json.dumps(data), dict=data, video_id=data['video_id'], login_pic_url=login_pic_url)
     else:
-        return redirect(url_for('index'))
+        return redirect(url_for('video_list'))
 
 
 @app.route('/download_video', methods=['POST'])

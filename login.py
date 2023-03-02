@@ -351,7 +351,7 @@ class Login(object):
             port = f'{random.randint(6, 8)}{random.randint(1, 9)}{random.randint(1, 9)}{random.randint(1, 9)}'
             print(f'第 {i + 1} 次初始化chrome, 端口为:{port} ')
             try:
-                self.init_broswer_popen(url=url, port=port)
+                self.init_broswer(url=url, port=port)
                 # input('test:: ')
                 if 'sannysoft' in self.broswer.current_url:
                     print('chrome 正常状态...', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
@@ -675,7 +675,9 @@ if __name__ == '__main__':
     # input('???:')
 
     # login.init_broswer(url='https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Dzh-CN%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=zh-CN&ec=65620', port='9898')
-    result = login.youtube_login(account=input('account: '), password=input('password: '))
-    if result is True:
-        login.youtube_upload(video_path='G:\\idm_download\\test1.mp4', title='beautiful girl')
+    result = login.tiktok_login(account=input('account: '), password=input('password: '))
+
+    # result = login.youtube_login(account=input('account: '), password=input('password: '))
+    # if result is True:
+    #     login.youtube_upload(video_path='G:\\idm_download\\test1.mp4', title='beautiful girl')
     input('finally:::')

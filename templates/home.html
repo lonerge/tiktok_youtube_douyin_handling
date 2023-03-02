@@ -223,7 +223,7 @@ jQuery(function($) {
 	    	   	 <a id="keywords"></a>
 	    	   </div>
 				<div class="vertion-buttons">
-				 <a >若无法播放, 点击下载按钮, 下载后即可预览视频</a>
+				 <a >若无法播放, 点击下载按钮, 下载后再次播放即可预览视频</a>
 			   </div>
 	    	 </div>
 	    	 <div class="color-boxs">
@@ -234,7 +234,9 @@ jQuery(function($) {
 	    	   	  	<img src="static/images/like.png"  alt="" style="width: 40px; height: 40px">
 	    	   	  </button>
 	    	   	  <button type="button" class="app-box green">
-	    	   	  	<img src="static/images/next.png"  alt="" style="width: 40px; height: 40px">
+<!-- 	    	   	  	<img src="static/images/next.png"  alt="" style="width: 40px; height: 40px"> -->
+	    	   	  	<a href="{{ origin_video_url }}" download="" height="40px" width="40px"> 下载源视频 </a>
+<!-- 	    	   	  	<iframe name="tempiframe" style="display:none"></iframe> -->
 	    	   	  </button>
 	    	   	 <div class="clear"> </div>
 	    	   </div>
