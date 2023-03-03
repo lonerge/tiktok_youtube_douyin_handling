@@ -1,3 +1,6 @@
+from gevent import pywsgi
+from gevent import monkey
+monkey.patch_all()
 import json
 import random
 import time
@@ -339,7 +342,10 @@ def kill_orphan_chrome():
 
 if __name__ == '__main__':
     if sys.argv[1] == 'ten':
-        app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
+        # app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
+        # app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
+        server = pywsgi.WSGIServer((api_config['Host'], int(api_config['Port'])), app)
+        server.serve_forever()
     elif sys.argv[1] == 'test':
         app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
     else:
