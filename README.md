@@ -12,6 +12,7 @@
 - requests(请求库)
 - mongodb(存储视频数据)
 - threadpool(线程池,多线程请求)
+- 开启爬虫, 可能需要境外ip
 
 
 
