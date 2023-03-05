@@ -44,17 +44,19 @@ for keyword in keywords_english.split(','):
         kill_orphan_chrome()
         print(f'keyword: {keyword}')
         if crawlers_config['Tiktok_crawler'] == 'True':
+            print(f'开启tiktok爬虫...')
             try:
                 crawler.tiktok_crawler(keyword)
             except:
                 pass
         if keyword == 'funny' or keyword == 'hot':
             if crawlers_config['Youtube_crawler'] == 'True':
+                print(f'开启youtube爬虫...')
                 try:
                     crawler.youtube_crawler(keyword)
                 except:
                     pass
-        time.sleep(6)
+        time.sleep(2)
     except:
         continue
 for keyword in keywords_chinese.split(','):
@@ -62,8 +64,9 @@ for keyword in keywords_chinese.split(','):
         kill_orphan_chrome()
         print(f'keyword: {keyword}')
         if crawlers_config['Douyin_crawler'] == 'True':
+            print(f'开启douyin爬虫...')
             crawler.douyin_crawler(keyword)
-        time.sleep(6)
+        time.sleep(3)
     except Exception as e:
         print(f'error: {e}')
         continue
