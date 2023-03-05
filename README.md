@@ -1,3 +1,9 @@
+# 注意!!!:
+- 取消演示服务器上搬运视频功能;
+- 开启tiktok/youtube爬虫,需要境外ip; 
+- douyin爬虫失效,可手动更新cookies;
+
+
 # 预览及功能介绍
 - 预览: http://43.156.63.82:5050/video_list
 - 无水印视频抓取: 包括tiktok视频; youtube视频; 抖音视频
@@ -5,9 +11,6 @@
 - 搬运中的发布视频使用的selenium
 
 
-# 注意!!!:
-- 开启tiktok/youtube爬虫,需要境外ip; 
-- douyin爬虫失效,可手动更新cookies;
 
 # 运行环境:
 - python3
