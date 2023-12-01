@@ -17,6 +17,18 @@ config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
 login_config = config['Login']
 path_config = config['Path']
+Chrome_log = path_config['Chrome_log']
+error_path = path_config['Error_path']
+if os.path.exists(Chrome_log):
+    pass
+else:
+    print(f'Chrome_log 目录不存在, 开始创建...')
+    os.mkdir(Chrome_log)
+if os.path.exists(error_path):
+    pass
+else:
+    print(f'error_path 目录不存在, 开始创建...')
+    os.mkdir(error_path)
 
 
 class Login(object):

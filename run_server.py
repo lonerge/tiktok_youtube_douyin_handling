@@ -29,6 +29,11 @@ else:
 collection = client['handling_vedio']['vedios']
 video_path = path_config['Video_path']
 error_path = path_config['Error_path']
+if os.path.exists(error_path):
+    pass
+else:
+    print(f'error_path 目录不存在, 开始创建...')
+    os.mkdir(error_path)
 
 LOGIN = None
 PREDATA = None
