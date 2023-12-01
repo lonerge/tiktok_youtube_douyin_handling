@@ -378,8 +378,6 @@ class Crawlers(object):
 
         res = self.simple_post(url=url, headers=headers, data_json=json.dumps(data))
         if res is not None:
-            # with open('youtube.json', 'w', encoding='utf-8')as f:
-            #     f.write(res)
             target = json.loads(res)
             try:
                 all_video = \
@@ -501,23 +499,22 @@ class Crawlers(object):
             'cookie': cookies
         }
         res = self.simple_get(url=url, headers=headers)
-        # print('res: ', res)
         has_more = 0
         if res is not None:
+            results = []
             target = json.loads(res)
             if target['status_code'] < 300:
                 if 'has_more' in target.keys():
                     if target['has_more'] == 1:
                         has_more = 1
+                if 'data' not in target.keys():
+                    return results, False
+
                 videos = target['data']
-                results = []
                 for video in videos:
                     video = video['aweme_info']
-                    temp = {}
-                    temp['keywords'] = keywords
-                    temp['video_id'] = video['aweme_id']
-                    temp['video_pic'] = video['video']['cover']['url_list'][0]
-                    temp['video_title'] = video['desc']
+                    temp = {'keywords': keywords, 'video_id': video['aweme_id'],
+                            'video_pic': video['video']['cover']['url_list'][0], 'video_title': video['desc']}
                     if re.search(r'(.+?)#', video['desc']):
                         temp['video_title'] = re.search(r'(.+?)#', video['desc']).group(1)
                     elif re.search(r'(.+?)@', video['desc']):
