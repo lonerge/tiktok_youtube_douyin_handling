@@ -19,20 +19,16 @@ def kill_orphan_chrome():
         if sys.argv[1] == 'test':
             break
         else:
-            if os.popen('ps -f --ppid 1 | grep chromedriver').read():
-                try:
+            try:
+                if os.popen('ps -f --ppid 1 | grep chromedriver').read():
                     os.system("ps -f --ppid 1 | grep chromedriver | awk '{print $2}' | xargs kill -9")
-                except:
-                    pass
-            if os.popen('ps -f --ppid 1 | grep chrome').read():
-                try:
+            except:
+                pass
+            try:
+                if os.popen('ps -f --ppid 1 | grep chrome').read():
                     os.system("ps -f --ppid 1 | grep chrome | awk '{print $2}' | xargs kill -9")
-                except:
-                    pass
-            if os.popen('ps -f --ppid 1 | grep chromedriver').read() == '' and os.popen(
-                    'ps -f --ppid 1 | grep chrome').read() == '':
-                break
-        num += 1
+            except:
+                pass
         time.sleep(random.uniform(0.1, 0.2))
         if num > 3:
             break

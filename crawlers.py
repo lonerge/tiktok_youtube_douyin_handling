@@ -11,7 +11,7 @@ import threadpool
 from urllib.parse import quote
 import configparser
 import os
-
+import undetected_chromedriver as uc
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -26,21 +26,18 @@ MAX_PAGE = int(crawlers_config['Max_page'])
 class Crawlers(object):
     def __init__(self):
         print(f'初始化爬虫...')
-        self.tiktok_headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'}
-        self.tiktok_api_headers = {'user-agent': 'com.ss.android.ugc.trill/2613 (Linux; U; Android 10; en_US; Pixel 4; Build/QQ3A.200805.001; Cronet/58.0.2991.0)'}
+        self.tiktok_headers = {
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'}
+        self.tiktok_api_headers = {
+            'user-agent': 'com.ss.android.ugc.trill/2613 (Linux; U; Android 10; en_US; Pixel 4; Build/QQ3A.200805.001; Cronet/58.0.2991.0)'}
         if sys.argv[1] == 'test':
             client = MongoClient(host=path_config['Mongo_host_local'], port=int(path_config['Mongo_port']))
-            self.db = client['handling_vedio']
-            self.collection = self.db['vedios']
-        elif sys.argv[1] == 'ten':
-            client = MongoClient(host=path_config['Mongo_host_local'], port=int(path_config['Mongo_port_ten']))
-            self.db = client['handling_vedio']
-            self.collection = self.db['vedios']
         else:
             client = MongoClient(host=path_config['Mongo_host_server'], port=int(path_config['Mongo_port']))
-            self.db = client['handling_vedio']
-            self.collection = self.db['vedios']
-        self.info = {'video_id': None, 'video_title': None, 'video_url': None, 'audio_url': None, 'update_timestamp': None}
+        self.db = client['handling_vedio']
+        self.collection = self.db['vedios']
+        self.info = {'video_id': None, 'video_title': None, 'video_url': None, 'audio_url': None,
+                     'update_timestamp': None}
         self.youtube_results = []
         self.tiktok_results = []
         self.douyin_results = []
@@ -50,49 +47,23 @@ class Crawlers(object):
         elif crawlers_config['Use_socks5_proxy'] == 'True':
             self.proxy = {"http": crawlers_config['Socks5_proxy'], "https": crawlers_config['Socks5_proxy']}
         elif crawlers_config['Use_simple_proxy'] == 'True':
-            self.proxy = {"http": 'http://' + crawlers_config['Socks5_proxy'], "https": 'https://' + crawlers_config['Socks5_proxy']}
+            self.proxy = {"http": 'http://' + crawlers_config['Socks5_proxy'],
+                          "https": 'https://' + crawlers_config['Socks5_proxy']}
         else:
             self.proxy = None
 
     def update_tiktok_cookies(self):
-        port = '7494'
-        opt = webdriver.ChromeOptions()
-        # opt.add_argument('--proxy-server=http://' +proxy)
-        # 设置无头模式
-        opt.add_argument("--headless")
-        opt.add_argument("--lang=zh-CN")
-        opt.add_argument("--window-size=1920,1080")
-        opt.add_argument("--start-maximized")
-        opt.add_argument("--no-sandbox")
-        opt.add_argument("--disable-dev-shm-usage")
-        opt.add_argument("--disable-gpu")
-        opt.add_argument(f"--remote-debugging-port={port}")
-        opt.add_argument("--disable-infobars")
-        # 实现不自动关闭浏览器窗口
-        opt.add_experimental_option("detach", True)
-        prefs = {"": ""}
-        prefs["credentials_enable_service"] = False
-        prefs["profile.password_manager_enabled"] = False
-        opt.add_experimental_option("prefs", prefs)  # 屏蔽'保存密码'提示框
-        # 实现每个账号对应一个浏览器
-        opt.add_argument('--user-data-dir=' + path_config['Chrome_log'] + port)
-        opt.add_argument("--no-first-run")
-        opt.add_argument('--no-default-browser-check')
-        opt.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.88 Safari/537.36')
-        opt.add_experimental_option('excludeSwitches', ['enable-automation'])
-        opt.add_experimental_option('useAutomationExtension', False)
-        # 高版本chrome防止被识别
-        opt.add_argument('--disable-blink-features=AutomationControlled')
         print('chrome 正在启动', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        _browser = webdriver.Chrome(options=opt)
+        opt = uc.ChromeOptions()
+        opt.add_argument('--no-first-run')
+        opt.add_argument('--no-service-autorun')
+        opt.add_argument('--password-store=basic')
+        opt.add_argument('--lang=en-US')
+        opt.add_argument('--mute-audio')
+        opt.add_argument('--disable-gpu')
+        opt.add_argument('--headless')
+        _browser = uc.Chrome(options=opt, version_main=int(path_config['chrome_version']))
         print('chrome 启动成功', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        _browser.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": """
-                            Object.defineProperty(navigator, 'webdriver', {
-                                get: () => undefined
-                            })
-                        """
-        })
         _browser.implicitly_wait(10)
         _browser.get('https://www.tiktok.com/foryou?is_copy_url=1&is_from_webapp=v1')
         time.sleep(random.uniform(2, 3))
@@ -101,7 +72,7 @@ class Crawlers(object):
         if len(cookies) > 0:
             try:
                 _browser.quit()
-                with open('tiktok_cookies.json', 'w')as f:
+                with open('tiktok_cookies.json', 'w') as f:
                     f.write(json.dumps(cookies))
             except:
                 pass
@@ -116,10 +87,9 @@ class Crawlers(object):
     def tiktok_crawler(self, search_keywords):
         self.tiktok_results = []
         # 先关键词搜索视频
-        # search_keywords = 'funny videos'
         video_list = []
         for i in range(MAX_PAGE):
-            temp, has_more = self.tiktok_search_video(search_keywords, offset=12*i)
+            temp, has_more = self.tiktok_search_video(search_keywords, offset=12 * i)
             if has_more == 1:
                 for one in temp:
                     video_list.append(one)
@@ -159,8 +129,10 @@ class Crawlers(object):
                         if self.collection.find_one({'video_id': video_id}):
                             del video['video_id']
                             self.collection.update_one({'video_id': video_id}, {'$set': video})
+                            print(f'更新数据: {video_id}')
                         else:
                             self.collection.insert_one(video)
+                            print(f'写入数据: {video_id}')
                     else:
                         print(f'tiktok video_url is None... skip saving')
                         continue
@@ -176,7 +148,8 @@ class Crawlers(object):
         new_video_list = []
         for video in video_list:
             video_id = video['video_id']
-            if self.collection.find_one({'video_id': video_id}) is None or (time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 4*60*60):
+            if self.collection.find_one({'video_id': video_id}) is None or (
+                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 4 * 60 * 60):
                 new_video_list.append(video)
             else:
                 continue
@@ -220,7 +193,7 @@ class Crawlers(object):
         self.douyin_results = []
         video_list = []
         for i in range(MAX_PAGE):
-            temp, has_more = self.douyin_search_video(search_keywords, offset=12*i)
+            temp, has_more = self.douyin_search_video(search_keywords, offset=12 * i)
             if has_more == 1:
                 for one in temp:
                     video_list.append(one)
@@ -236,7 +209,7 @@ class Crawlers(object):
                 new_video_list.append(video)
             else:
                 continue
-        print(f'douyin需要更新视频数量: {len(new_video_list)}')
+        print(f'douyin 需要更新视频数量: {len(new_video_list)}')
         if new_video_list:
             for video in new_video_list:
                 video_id = video['video_id']
@@ -254,7 +227,7 @@ class Crawlers(object):
                     print(f'douyin video_url is not in keys... skip saving')
                     continue
         else:
-            print(f' 采集douyin视频出现异常, keywords:{search_keywords}')
+            print(f'douyin 没有 需要更新视频, keywords:{search_keywords}')
 
     def save_result(self, request, result):
         self.youtube_results.append({'request_id': request.requestID, 'results': result})
@@ -263,22 +236,24 @@ class Crawlers(object):
         self.tiktok_results.append({'request_id': request.requestID, 'results': result})
 
     def tiktok_search_video(self, search_keywords, offset=0):
+        cookiestr = "tt_csrf_token=poZiJA2w-g7ubYxO-IPYptHs43-fevP82K6c; tt_chain_token=LV3vyP9xkzu1olcUYxoMPA==; csrf_session_id=3c385bce12441f6a9adcb2b02b5e5dae; passport_csrf_token=13925ec1d3411be9048f73be0f660a95; passport_csrf_token_default=13925ec1d3411be9048f73be0f660a95; s_v_web_id=verify_lojksyop_PltyvHfO_6w5N_4DwS_AewM_sS6alf5MtDVD; multi_sids=7169356242610357254%3Af0585c4b10a9490c77eb0c414da470d4; cmpl_token=AgQQAPO8F-RO0rNARSMFN90__yRRexJef4A3YNODxQ; passport_auth_status=8dba23d8f1a6f74eb79aafed4c6e10fa%2C; passport_auth_status_ss=8dba23d8f1a6f74eb79aafed4c6e10fa%2C; sid_guard=f0585c4b10a9490c77eb0c414da470d4%7C1699110824%7C15552000%7CThu%2C+02-May-2024+15%3A13%3A44+GMT; uid_tt=afcd0f90ff8631face19e3f8a187453648b65e7c99ecafec77e51b179432c6a4; uid_tt_ss=afcd0f90ff8631face19e3f8a187453648b65e7c99ecafec77e51b179432c6a4; sid_tt=f0585c4b10a9490c77eb0c414da470d4; sessionid=f0585c4b10a9490c77eb0c414da470d4; sessionid_ss=f0585c4b10a9490c77eb0c414da470d4; sid_ucp_v1=1.0.0-KGMyNGM5ZmQ1NjE5MjE5MTM1MDI4MDVkZmMzNGQyNDA2YzQyOGFiY2MKHwiGiJToyPCqv2MQqL-ZqgYYswsgDDCDlvubBjgIQBIQAxoGbWFsaXZhIiBmMDU4NWM0YjEwYTk0OTBjNzdlYjBjNDE0ZGE0NzBkNA; ssid_ucp_v1=1.0.0-KGMyNGM5ZmQ1NjE5MjE5MTM1MDI4MDVkZmMzNGQyNDA2YzQyOGFiY2MKHwiGiJToyPCqv2MQqL-ZqgYYswsgDDCDlvubBjgIQBIQAxoGbWFsaXZhIiBmMDU4NWM0YjEwYTk0OTBjNzdlYjBjNDE0ZGE0NzBkNA; store-idc=alisg; store-country-code=sg; store-country-code-src=uid; tt-target-idc=alisg; tt-target-idc-sign=aL8uKtxviSyE5Urayg680oYvSQPlHCptrUNu0A50vNQtWjxDn4k0qL-IzEX_F4uVsDIH11h4Ld7xteVoPEN7X7j5TpZp2AeEw_xdP6-J6kGm74x_TW9Ij_I3lY3AFJZ0MXNRy_cIwqzy_AB1AfqtHlGTJ5cBi2x7vLVYGH-cRklp2purLxVRb7ofeJHQpvLhORGDpzCBdxuMjKpCDB992PzCMUCmyyibEyxIFy_TUZXquRhmcIkfRoVAbq5TwsdA6W2QpAyaN8ZS1MOkSpBqXMO8U6nF89XZnB49yiC_4YEC7x09_LUw_Uj9-idt6McglSyxzzEMNzShHjALyWNhEh-Y0sAsghC-R1yvn6Wl0-99AjqtiGl47AaKBeshO0J2hC_ojih5sqQUKgjSA2VZDatSRSHkNp535QMMUwVj_WTX7uSxwZpVPYkcxdz82kiC5Y0ayiA0YBDh8l0wpwNzo9jei5k53k5ojd3RsRkT6oYD2eFoUiDmcDH_CKf_-YVN; ttwid=1%7CPslqeUeyVJmPPQ_m2XdO-inB7WkSqW2h4e4P_ZxGZeE%7C1700471632%7C1f004ba9a4192e255a3ae80910ca98fc48f925429cd67d5b589b4eacbb8caa6a; msToken=nUPQqImtDM_NQKZgj14YiSn9x7sxb4MXPRmXJMP_0TK0jJvblzEEiTafq9tZclma4bfTjqX13vgK-TtsF1v1yP-Gm9kOpenFhlDPiC-1kyhH85JV8iPiKKIpPkUyn2D820hIe0LXf_mstVI=; odin_tt=7fa11e3dd2ce551f6d7a6aad704d6109f70424f6a6bf1c944e4d98b28535f26140e2f6f9eb8e4b5a1e719f71f52036e62ce8ddf8f49376ef581420643b8b0cb3595e9d0213e4ac88f9c1aa7a8569eb5e"
         keywords = search_keywords
         search_keywords = quote(search_keywords, safe='')
         print('search_keywords: ', search_keywords)
-        url = f'https://www.tiktok.com/api/search/general/full/?aid=1988&app_language=zh-Hant-TW&app_name=tiktok_web&battery_info=1&browser_language=zh-CN&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F107.0.0.0%20Safari%2F537.36&channel=tiktok_web&cookie_enabled=true&device_id=7173961358269646337&device_platform=web_pc&focus_state=true&from_page=search&history_len=3&is_fullscreen=false&is_page_visible=true&keyword={search_keywords}&offset={offset}&os=mac&priority_region=&referer=&region=SG&screen_height=1080&screen_width=1920&tz_name=Asia%2FShanghai&webcast_language=zh-Hant-TW&msToken=W7IagJhZQ5xWYCBfr5njBqLgccZISpTbf-BVQLkvYwdpWD7uZgApaAQCwQwctB-T0zaG06A20anq07vAKTsL_dVlueFmCbMkyzFcfLLI03K_Wcpb-0vupyisglLCAYb4w_VeujeWflqCY0pK&X-Bogus=DFSzswVLqg2ANcoQSpF8c37TlqCg&_signature=_02B4Z6wo000019RUk9QAAIDAQILI2MoFNjvUVJdAAJajfa'
+        url = f'https://www.tiktok.com/api/search/general/full/?aid=1988&app_language=zh-Hans&app_name=tiktok_web&browser_language=zh-CN&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F118.0.0.0%20Safari%2F537.36&channel=tiktok_web&cookie_enabled=true&device_id=7291677034442016263&device_platform=web_pc&device_type=web_h264&focus_state=false&from_page=search&history_len=2&is_fullscreen=false&is_page_visible=true&keyword={search_keywords}&offset={offset}&os=mac&priority_region=&referer=&region=SG&screen_height=900&screen_width=1440&search_id=20231019143145139F4D25AFEB59234776&tz_name=Asia%2FShanghai&web_search_code=%7B%22tiktok%22%3A%7B%22client_params_x%22%3A%7B%22search_engine%22%3A%7B%22ies_mt_user_live_video_card_use_libra%22%3A1%2C%22mt_search_general_user_live_card%22%3A1%7D%7D%2C%22search_server%22%3A%7B%7D%7D%7D&webcast_language=zh-Hans'
         headers = {
             'authority': 'www.tiktok.com',
             'referer': 'https://www.tiktok.com/search?q=beautiful%20woman&t=1670318209758',
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-            'cookie': 'tt_csrf_token=WNzIcoNY-wy-KNgVoJo8ZB6QOtKXC4geDlTg; tt_chain_token=GMqzqYdmMbJpHaBk+UUhdg==; tiktok_webapp_theme=light; __tea_cache_tokens_1988={%22_type_%22:%22default%22%2C%22user_unique_id%22:%227173961358269646337%22%2C%22timestamp%22:1670318057596}; ak_bmsc=349C7752F2AF3CA03207ACD28780895F~000000000000000000000000000000~YAAQNqs0F6skEcGEAQAAauy25hKJiwq0j+AmaMvqK4UhvuHZf/Qt1ZaUvt5Lq9Ylo/fWJgA38filVbgwbXtuGJZNfwYFvYJpJ7IzEs36g3iVcPjh092Lr1zi49vcGxK/vOuHexRz9GCLLZhdBGPrdPpCKX6xg3UlI9UWR9SUtcxkRdkV8RSmcAlwtV+E5ZxPcU34UQHG3lFF93ohbfiKNJdYFxbBc/5zeHoJJyd8LnD17gGK48NPZ1qe62zrzzUK+OCRpxRpUMcO3KJn1T4j8Qj1R/yrdgxbvSA9UKjbwIPTZAxPh4ZrTyAts2jtNMIHSmE80qcuu1DtYqw58T/sKhfao3D17nGE61cFZvqo9K1f1YOE7M6TL7RqPagf1V+umGBECsP0X4qk6KXyek0jpO0280Dr0LLWA3oYGN35FvKOekyceCYs2o7sjYTG+4egv9FeM7ApX6ZJBKrftqP0Y34cIthL0uGYdmE1ZlSfW7LpgxigLfQB2kaXCQ==; ttwid=1%7CxI0mD1Yz4JYzTm5ugF7WCxZFsftzyIM9NW_GgVrzFxE%7C1670318190%7C087ebd1daa4f59fcff0039f30f19ced6d3a7018e3ecfbb30ada6831fba31f14f; bm_sv=51043CEE1C16967790C085A953E05E8C~YAAQNqs0FykyEcGEAQAAbfm45hLDLQHnodg5JkSEf1KgH0H2+EveNMrtxZL5sq1NGJO2Q30bDTnj0UlKR1VIpUpLPkftu59oJqvNXAwK5CbcYT5fP0pRuzbsMpLzZ/TbhLNm1kvTacffgNlPrZgyCi0rIVE8TSIRLmmMVwQfR4NI586WIj5SzMLvJbZAJ+1SyfHjYNnBhRogmwfIWdDuyg0Q971BGUuEUDXVsymlqicce0U9GFQkl0LQBXj72ooD~1; msToken=SmWcr1TVdM7tLMF9yNkebFZY-FsZp1PghjiccBgDURLxz8qcluFQ1bWhWfocrCB6s9-k5gnhCzgd-9fxVQyVsApvI4D_13Xf5u8OGD-FTY_m-V0Y5j9PxOQcPKiUw6U=; msToken=W7IagJhZQ5xWYCBfr5njBqLgccZISpTbf-BVQLkvYwdpWD7uZgApaAQCwQwctB-T0zaG06A20anq07vAKTsL_dVlueFmCbMkyzFcfLLI03K_Wcpb-0vupyisglLCAYb4w_VeujeWflqCY0pK'
-                }
+            'cookie': cookiestr
+        }
         res = self.simple_get(url=url, headers=headers)
         if res is None or res == '':
-            curl_code = f"curl 'https://www.tiktok.com/api/search/general/full/?aid=1988&app_language=zh-Hant-TW&app_name=tiktok_web&battery_info=1&browser_language=zh-CN&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F107.0.0.0%20Safari%2F537.36&channel=tiktok_web&cookie_enabled=true&device_id=7173961358269646337&device_platform=web_pc&focus_state=true&from_page=search&history_len=3&is_fullscreen=false&is_page_visible=true&keyword={search_keywords}&offset={offset}&os=mac&priority_region=&referer=&region=SG&screen_height=1080&screen_width=1920&tz_name=Asia%2FShanghai&webcast_language=zh-Hant-TW' \
-  -H 'cookie: tt_csrf_token=WNzIcoNY-wy-KNgVoJo8ZB6QOtKXC4geDlTg; tt_chain_token=GMqzqYdmMbJpHaBk+UUhdg==; tiktok_webapp_theme=light; ak_bmsc=349C7752F2AF3CA03207ACD28780895F~000000000000000000000000000000~YAAQNqs0F6skEcGEAQAAauy25hKJiwq0j+AmaMvqK4UhvuHZf/Qt1ZaUvt5Lq9Ylo/fWJgA38filVbgwbXtuGJZNfwYFvYJpJ7IzEs36g3iVcPjh092Lr1zi49vcGxK/vOuHexRz9GCLLZhdBGPrdPpCKX6xg3UlI9UWR9SUtcxkRdkV8RSmcAlwtV+E5ZxPcU34UQHG3lFF93ohbfiKNJdYFxbBc/5zeHoJJyd8LnD17gGK48NPZ1qe62zrzzUK+OCRpxRpUMcO3KJn1T4j8Qj1R/yrdgxbvSA9UKjbwIPTZAxPh4ZrTyAts2jtNMIHSmE80qcuu1DtYqw58T/sKhfao3D17nGE61cFZvqo9K1f1YOE7M6TL7RqPagf1V+umGBECsP0X4qk6KXyek0jpO0280Dr0LLWA3oYGN35FvKOekyceCYs2o7sjYTG+4egv9FeM7ApX6ZJBKrftqP0Y34cIthL0uGYdmE1ZlSfW7LpgxigLfQB2kaXCQ==; ttwid=1%7CxI0mD1Yz4JYzTm5ugF7WCxZFsftzyIM9NW_GgVrzFxE%7C1670318190%7C087ebd1daa4f59fcff0039f30f19ced6d3a7018e3ecfbb30ada6831fba31f14f; msToken=AyoMfpQsLreOPctkAl243PA13WhJ0WEikAjtLWjJFo8cO23DbNdlXjSf7gNj_lHf--wzLiN3rjo2cUxxn3ruL5AeyVhYWi6Jce0RMEWKrbsW47Unl9MBBl-JuLJ-_U1ZDI5sKyDajgYa-sUD; bm_sv=51043CEE1C16967790C085A953E05E8C~YAAQVh0gF3wqMOWEAQAAj5jZ5hLuoIgn1JYkLn149jy8K5dpvVDimdPVllwWkoPn8ubWhMNxUn3LXLMM+4kTy7l0X/zC4Jn1WLrM5MvUPhy4Cjwk8fWzHDe1RiAP9FlrjJ9k6LamOrXMQ5ODya1UfWl6Asg9gEJZOQVRZ9JeSsGO+iMUCw2li3OuFr1o+zCE7OL/flcrcNcp2K8rw88u/ZkNozFngWJNV4XHlhfGa2YDYsRs7NV8q4mu1AwKmg9x~1' \
-  -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36' \
-  --compressed"
+            print(f'直接请求失败, 开始curl请求...')
+            curl_code = f"curl 'https://www.tiktok.com/api/search/general/full/?aid=1988&app_language=zh-Hans&app_name=tiktok_web&browser_language=zh-CN&browser_name=Mozilla&browser_online=true&browser_platform=MacIntel&browser_version=5.0%20%28Macintosh%3B%20Intel%20Mac%20OS%20X%2010_15_7%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20Chrome%2F118.0.0.0%20Safari%2F537.36&channel=tiktok_web&cookie_enabled=true&device_id=7291677034442016263&device_platform=web_pc&device_type=web_h264&focus_state=false&from_page=search&history_len=2&is_fullscreen=false&is_page_visible=true&keyword={search_keywords}&offset={offset}&os=mac&priority_region=&referer=&region=SG&screen_height=900&screen_width=1440&search_id=20231019143145139F4D25AFEB59234776&tz_name=Asia%2FShanghai&web_search_code=%7B%22tiktok%22%3A%7B%22client_params_x%22%3A%7B%22search_engine%22%3A%7B%22ies_mt_user_live_video_card_use_libra%22%3A1%2C%22mt_search_general_user_live_card%22%3A1%7D%7D%2C%22search_server%22%3A%7B%7D%7D%7D&webcast_language=zh-Hans' \
+                    -H 'cookie: {cookiestr}' \
+                    -H 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36' \
+                    --compressed"
             res_curl = os.popen(curl_code).read()
             try:
                 json.loads(res_curl)
@@ -287,25 +262,23 @@ class Crawlers(object):
                 res = None
         has_more = 0
         if res is not None:
+            results = []
             target = json.loads(res)
             if target['status_code'] < 300:
                 if 'has_more' in target.keys():
                     if target['has_more'] == 1:
                         has_more = 1
+                if 'data' not in target.keys():
+                    return results, False
                 videos = target['data']
-                # videos = filter(lambda x: x['type'] == 1, videos)
-                results = []
                 for video in videos:
                     if 'item' in video.keys():
                         video = video['item']
                     else:
-                        # input('test specail: ')
                         continue
-                    temp = {}
-                    temp['keywords'] = keywords
-                    temp['video_id'] = video['id']
-                    temp['video_pic'] = video['video']['cover']
-                    temp['video_title'] = video['desc']
+                    temp = {'keywords': keywords, 'video_id': video['id'], 'video_pic': video['video']['cover'],
+                            'video_title': video['desc']
+                            }
                     if re.search(r'(.+?)#', video['desc']):
                         temp['video_title'] = re.search(r'(.+?)#', video['desc']).group(1)
                     elif re.search(r'(.+?)@', video['desc']):
@@ -333,11 +306,8 @@ class Crawlers(object):
         url = f'https://api-h2.tiktokv.com/aweme/v1/feed/?aweme_id={video_id}&version_name=26.1.3&version_code=2613&build_number=26.1.3&manifest_version_code=2613&update_version_code=2613&{openudid}=6273a5108e49dfcb&uuid={uuid}&_rticket=1667123410000&ts={ts}&device_brand=Google&device_type=Pixel%204&device_platform=android&resolution=1080*1920&dpi=420&os_version=10&os_api=29&carrier_region=US&sys_region=US%C2%AEion=US&app_name=trill&app_language=en&language=en&timezone_name=America/New_York&timezone_offset=-14400&channel=googleplay&ac=wifi&mcc_mnc=310260&is_my_cn=0&aid=1180&ssmix=a&as=a1qwert123&cp=cbfhckdckkde1'
         headers = self.tiktok_api_headers
         res = self.simple_get(url, headers)
-        # print('tiktok res: ', res)
         # input('test:::')
         if res is not None:
-            # with open(f'tiktok.json', 'w', encoding='utf-8')as f:
-            #     f.write(res)
             data = json.loads(res)
             video_info = data['aweme_list'][0]
             video_url = None
@@ -370,11 +340,41 @@ class Crawlers(object):
             'content-type': 'application/json',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
             'x-goog-visitor-id': 'CgtuT0xFZHFlU0d3TSi09ZGbBg%3D%3D'
-                }
+        }
         country = random.choice(['US', 'SG', 'JP'])
         ip = random.choice(['172.53.173.232', '172.105.229.161', '182.125.229.161', '192.53.173.232'])
-        # data = {"context":{"client":{"hl":"zh-CN","gl":"JP","remoteHost":"172.53.173.232","deviceMake":"","deviceModel":"","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36,gzip(gfe)","clientName":"WEB","clientVersion":"2.20221026.05.00","osName":"Windows","osVersion":"10.0","originalUrl": f"https://www.youtube.com/results?search_query={search_keywords}","platform":"DESKTOP","clientFormFactor":"UNKNOWN_FORM_FACTOR"}},"query":f"{search_keywords}"}
-        data = {"context":{"client":{"hl":"zh-CN","gl":f"{country}","remoteHost":f"{ip}","deviceMake":"","deviceModel":"","visitorData":"CgtuT0xFZHFlU0d3TSi09ZGbBg%3D%3D","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36,gzip(gfe)","clientName":"WEB","clientVersion":"2.20221103.04.00","osName":"Windows","osVersion":"10.0","originalUrl":f"https://www.youtube.com/results?search_query={search_keywords}","platform":"DESKTOP","clientFormFactor":"UNKNOWN_FORM_FACTOR","configInfo":{"appInstallData":"CLT1kZsGENSDrgUQm8quBRCZxq4FEJ_QrgUQsoj-EhCpp64FELjUrgUQt9yuBRCHkf4SEOK5rgUQuIuuBRCR-PwSENi-rQU%3D"},"userInterfaceTheme":"USER_INTERFACE_THEME_DARK","timeZone":"Asia/Shanghai","browserName":"Chrome","browserVersion":"107.0.0.0","acceptHeader":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9","deviceExperimentId":"ChxOekUyTVRrNE5ESXlNamd5TWpBeU16WTNOdz09ELT1kZsG","screenWidthPoints":1272,"screenHeightPoints":1297,"screenPixelDensity":1,"screenDensityFloat":1,"utcOffsetMinutes":480,"memoryTotalKbytes":"8000000","mainAppWebInfo":{"graftUrl":"/results?search_query=funny+video","pwaInstallabilityStatus":"PWA_INSTALLABILITY_STATUS_UNKNOWN","webDisplayMode":"WEB_DISPLAY_MODE_BROWSER","isWebNativeShareAvailable":True}},"user":{"lockedSafetyMode":False},"request":{"useSsl":True,"internalExperimentFlags":[],"consistencyTokenJars":[]},"clickTracking":{"clickTrackingParams":"CA0Q7VAiEwi588CKv5P7AhXQ_TgGHUB3BNI="},"adSignalsInfo":{"params":[{"key":"dt","value":"1667529402961"},{"key":"flash","value":"0"},{"key":"frm","value":"0"},{"key":"u_tz","value":"480"},{"key":"u_his","value":"2"},{"key":"u_h","value":"1440"},{"key":"u_w","value":"2560"},{"key":"u_ah","value":"1400"},{"key":"u_aw","value":"2560"},{"key":"u_cd","value":"24"},{"key":"bc","value":"31"},{"key":"bih","value":"1297"},{"key":"biw","value":"1256"},{"key":"brdim","value":"0,0,0,0,2560,0,2560,1400,1272,1297"},{"key":"vis","value":"1"},{"key":"wgl","value":"true"},{"key":"ca_type","value":"image"}]}},"query":f"{search_keywords}","webSearchboxStatsUrl":"/search?oq=funny&gs_l=youtube.12.0.0i512i433k1j0i512i433i131k1l4j0i512i433k1j0i512i3k1j0i512k1j0i512i433k1l2j0i512k1l4.9687.10621.0.16257.7.7.0.0.0.0.331.650.3-2.4.0....0...1ac.1j4.64.youtube..3.2.650.0..0i433i131k1.325.fYjIXqBJKd4"}
+        data = {"context": {
+            "client": {"hl": "zh-CN", "gl": f"{country}", "remoteHost": f"{ip}", "deviceMake": "", "deviceModel": "",
+                       "visitorData": "CgtuT0xFZHFlU0d3TSi09ZGbBg%3D%3D",
+                       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36,gzip(gfe)",
+                       "clientName": "WEB", "clientVersion": "2.20221103.04.00", "osName": "Windows",
+                       "osVersion": "10.0",
+                       "originalUrl": f"https://www.youtube.com/results?search_query={search_keywords}",
+                       "platform": "DESKTOP", "clientFormFactor": "UNKNOWN_FORM_FACTOR", "configInfo": {
+                    "appInstallData": "CLT1kZsGENSDrgUQm8quBRCZxq4FEJ_QrgUQsoj-EhCpp64FELjUrgUQt9yuBRCHkf4SEOK5rgUQuIuuBRCR-PwSENi-rQU%3D"},
+                       "userInterfaceTheme": "USER_INTERFACE_THEME_DARK", "timeZone": "Asia/Shanghai",
+                       "browserName": "Chrome", "browserVersion": "107.0.0.0",
+                       "acceptHeader": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                       "deviceExperimentId": "ChxOekUyTVRrNE5ESXlNamd5TWpBeU16WTNOdz09ELT1kZsG",
+                       "screenWidthPoints": 1272, "screenHeightPoints": 1297, "screenPixelDensity": 1,
+                       "screenDensityFloat": 1, "utcOffsetMinutes": 480, "memoryTotalKbytes": "8000000",
+                       "mainAppWebInfo": {"graftUrl": "/results?search_query=funny+video",
+                                          "pwaInstallabilityStatus": "PWA_INSTALLABILITY_STATUS_UNKNOWN",
+                                          "webDisplayMode": "WEB_DISPLAY_MODE_BROWSER",
+                                          "isWebNativeShareAvailable": True}}, "user": {"lockedSafetyMode": False},
+            "request": {"useSsl": True, "internalExperimentFlags": [], "consistencyTokenJars": []},
+            "clickTracking": {"clickTrackingParams": "CA0Q7VAiEwi588CKv5P7AhXQ_TgGHUB3BNI="}, "adSignalsInfo": {
+                "params": [{"key": "dt", "value": "1667529402961"}, {"key": "flash", "value": "0"},
+                           {"key": "frm", "value": "0"}, {"key": "u_tz", "value": "480"},
+                           {"key": "u_his", "value": "2"}, {"key": "u_h", "value": "1440"},
+                           {"key": "u_w", "value": "2560"}, {"key": "u_ah", "value": "1400"},
+                           {"key": "u_aw", "value": "2560"}, {"key": "u_cd", "value": "24"},
+                           {"key": "bc", "value": "31"}, {"key": "bih", "value": "1297"},
+                           {"key": "biw", "value": "1256"},
+                           {"key": "brdim", "value": "0,0,0,0,2560,0,2560,1400,1272,1297"},
+                           {"key": "vis", "value": "1"}, {"key": "wgl", "value": "true"},
+                           {"key": "ca_type", "value": "image"}]}}, "query": f"{search_keywords}",
+            "webSearchboxStatsUrl": "/search?oq=funny&gs_l=youtube.12.0.0i512i433k1j0i512i433i131k1l4j0i512i433k1j0i512i3k1j0i512k1j0i512i433k1l2j0i512k1l4.9687.10621.0.16257.7.7.0.0.0.0.331.650.3-2.4.0....0...1ac.1j4.64.youtube..3.2.650.0..0i433i131k1.325.fYjIXqBJKd4"}
 
         res = self.simple_post(url=url, headers=headers, data_json=json.dumps(data))
         if res is not None:
@@ -382,7 +382,9 @@ class Crawlers(object):
             #     f.write(res)
             target = json.loads(res)
             try:
-                all_video = target['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer']['contents'][0]['itemSectionRenderer']['contents']
+                all_video = \
+                    target['contents']['twoColumnSearchResultsRenderer']['primaryContents']['sectionListRenderer'][
+                        'contents'][0]['itemSectionRenderer']['contents']
                 target_video = filter(lambda x: 'videoRenderer' in x.keys(), all_video)
                 target_video = [one['videoRenderer'] for one in target_video]
                 video_list = []
@@ -419,7 +421,10 @@ class Crawlers(object):
                             video_watch_num = None
                     else:
                         video_watch_num = None
-                    temp = {'keywords': search_keywords, 'video_id': video_id, 'video_pic': video_pic, 'video_title': video_title, 'video_playtime': video_playtime, 'video_watch_num': video_watch_num, 'video_h5_url': video_h5_url, 'video_datafrom': video_datafrom, 'video_update_time': video_update_time}
+                    temp = {'keywords': search_keywords, 'video_id': video_id, 'video_pic': video_pic,
+                            'video_title': video_title, 'video_playtime': video_playtime,
+                            'video_watch_num': video_watch_num, 'video_h5_url': video_h5_url,
+                            'video_datafrom': video_datafrom, 'video_update_time': video_update_time}
                     print(temp)
                     video_list.append(temp)
                 return video_list
@@ -441,8 +446,6 @@ class Crawlers(object):
         if response is not None:
             json_str = re.findall('var ytInitialPlayerResponse = (.*?);var', response)[0]
             json_data = json.loads(json_str)
-            # video_url = json_data['streamingData']['adaptiveFormats'][0]['url']
-            # audio_url = json_data['streamingData']['adaptiveFormats'][-1]['url']
             video_url = None
             audio_url = None
             new_list = []
@@ -463,7 +466,7 @@ class Crawlers(object):
                     else:
                         continue
                 audio_url = new_list[-1]['url']
-                for i in range(len(new_list)-1, -1, -1):
+                for i in range(len(new_list) - 1, -1, -1):
                     if 'audio' in new_list[i]['mimeType'] and 'LOW' in new_list[i]['audioQuality']:
                         audio_url = new_list[i]['url']
                         break
@@ -486,7 +489,7 @@ class Crawlers(object):
         url = f'https://www.douyin.com/aweme/v1/web/search/item/?device_platform=webapp&aid=6383&channel=channel_pc_web&search_channel=aweme_video_web&sort_type=0&publish_time=0&keyword={search_keywords}&search_source=switch_tab&query_correct_type=1&is_filter_search=0&from_group_id=&offset={offset}&count=20&pc_client_type=1&version_code=170400&version_name=17.4.0&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=Win32&browser_name=Chrome&browser_version=107.0.0.0&browser_online=true&engine_name=Blink&engine_version=107.0.0.0&os_name=Windows&os_version=10&cpu_core_num=12&device_memory=8&platform=PC&downlink=10&effective_type=4g&round_trip_time=0&webid=7163531063863133732'
         try:
             # 读取抖音cookies
-            with open('douyin_cookies.txt', 'r', encoding='utf-8')as file:
+            with open('douyin_cookies.txt', 'r', encoding='utf-8') as file:
                 cookies = file.read()
         except:
             cookies = None
@@ -496,14 +499,9 @@ class Crawlers(object):
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
             'referer': 'https://www.douyin.com/search/%E7%83%AD%E9%97%A8?publish_time=0&sort_type=0&source=switch_tab&type=video',
             'cookie': cookies
-                }
+        }
         res = self.simple_get(url=url, headers=headers)
-        # del cookies['douyin.com']
-        # print(cookies)
-        print('res: ', res)
-        # with open('tiktok.json', 'w', encoding='utf-8')as f:
-        #     f.write(res)
-        # input(':::')
+        # print('res: ', res)
         has_more = 0
         if res is not None:
             target = json.loads(res)
@@ -542,7 +540,6 @@ class Crawlers(object):
             raise Exception(f'tiktok: 更新: {search_keywords} 失败!!! 请检查接口')
 
     def simple_post(self, url, data_json, headers):
-        # url = url.replace('https://', 'http://')
         for i in range(5):
             try:
                 if self.proxy:
@@ -550,13 +547,8 @@ class Crawlers(object):
                 else:
                     res = requests.post(url=url, headers=headers, data=data_json)
                 if res.status_code < 300:
-                    # data = json.loads(res.text)
-                    # if data['status'] == 0 or data['status'] == '0':
                     print(f'请求 {url} 成功! {res.status_code}')
                     return res.text
-                    # else:
-                    #     print(f'请求 {url} 响应异常: {res.text}, 开始重试, 重试次数:{i + 1}')
-                    #     continue
                 else:
                     print(f'请求 {url} 响应异常 状态码为: {res.status_code}, 开始重试, 重试次数:{i + 1}')
                     time.sleep(random.uniform(0.5, 1))
@@ -568,7 +560,6 @@ class Crawlers(object):
         raise Exception(f'接口: {url} 异常, 终止任务!')
 
     def simple_get(self, url, headers, cookies=None):
-        # url = url.replace('https://', 'http://')
         for i in range(5):
             try:
                 if self.proxy:
@@ -582,14 +573,8 @@ class Crawlers(object):
                     else:
                         res = requests.get(url=url, headers=headers)
                 if res.status_code < 300:
-                    # data = json.loads(res.text)
-                    # if data['status'] == 0 or data['status'] == '0':
                     print(f'请求 {url} 成功! {res.status_code}')
-                    # print('res.text: ', res.text)
                     return res.text
-                    # else:
-                    #     print(f'请求 {url} 响应异常: {res.text}, 开始重试, 重试次数:{i + 1}')
-                    #     continue
                 else:
                     print(f'请求 {url} 响应异常 状态码为: {res.status_code} {res.text}, 开始重试, 重试次数:{i + 1}')
                     time.sleep(random.uniform(0.5, 1))
@@ -599,32 +584,6 @@ class Crawlers(object):
                 time.sleep(random.uniform(0.5, 1))
                 continue
         raise Exception(f'接口: {url} 异常, 终止任务!')
-
-    def download_video(self):
-        # 默认启动路径为run_server所在路径
-        if self.arg == 'test':
-            path = 'E:\\codes\\Handling_Vedio\\static\\videos'
-        elif self.arg == 'ten':
-            path = '/root/ten_server/Handling_Vedio/static/videos'
-        else:
-            path = ''
-        diff = time.time() - 5*60*60
-        for one in self.collection.find({'video_update_time': {'$gt': diff}}):
-            # print(one)
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'}
-            for i in range(3):
-                try:
-                    resp = requests.get(url=one['video_url'], headers=headers, stream=True)
-                    if resp.status_code < 300:
-                        with open(path, 'wb')as f:
-                            f.write(resp.content)
-                        print(f'下载: {one["video_id"]} 成功! ')
-                        break
-                    else:
-                        continue
-                except:
-                    print(f'下载: {one["video_id"]} 失败, 开始重试')
-                    continue
 
 
 if __name__ == '__main__':
@@ -640,8 +599,8 @@ if __name__ == '__main__':
     #     time.sleep(3)
     # crawler.tiktok_search_video('beautiful girls', offset=0)
     # crawler.tiktok_video_info('7166533046601059585')
-    crawler.tiktok_crawler('funny')
+    # crawler.tiktok_crawler('funny')
     # crawler.youtube_crawler('funny')
 
     # crawler.douyin_search_video('小姐姐短视频')
-    # crawler.douyin_crawler('小姐姐短视频')
+    crawler.douyin_crawler('小姐姐短视频')

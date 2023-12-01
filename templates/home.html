@@ -135,16 +135,22 @@ jQuery(function($) {
   $('form').removeClass('hidden');
 });
 </script>
-<!--//video-->
+<script type="text/javascript">
+	function openLinkInNewTab(url) {
+    // 使用 window.open 打开新标签页
+    var newTab = window.open(url, '_blank');
+
+    // 休眠2秒后刷新新标签页
+    setTimeout(function() {
+        newTab.location.reload();
+    }, 2000);  // 2000毫秒 = 2秒
+}
+</script>
 </head>
 <body>
 <!---->
 <h2>选择你喜欢的视频</h2>
 <h3 size="10px" align="center" id="video_info" style="color: #00b38a"> </h3>
-<!--<div class="select_div">-->
-<!--    <select name="" id="select_list" >-->
-<!--    </select>-->
-<!--</div>-->
 
 <div class="movie-review">
 	<div class="movie-review-main">
@@ -233,10 +239,8 @@ jQuery(function($) {
 	    	   	  <button type="button" class="app-box red" onclick="Handling();">
 	    	   	  	<img src="static/images/like.png"  alt="" style="width: 40px; height: 40px">
 	    	   	  </button>
-	    	   	  <button type="button" class="app-box green">
-<!-- 	    	   	  	<img src="static/images/next.png"  alt="" style="width: 40px; height: 40px"> -->
-	    	   	  	<a href="{{ origin_video_url }}" download="" height="40px" width="40px"> 下载源视频 </a>
-<!-- 	    	   	  	<iframe name="tempiframe" style="display:none"></iframe> -->
+	    	   	  <button type="button" class="app-box green" style="height: 49.5px" onclick="openLinkInNewTab('{{ origin_video_url }}')">
+	    	   	  	<a download="" style="width: 40px; height: 40px"> 下载源视频 </a>
 	    	   	  </button>
 	    	   	 <div class="clear"> </div>
 	    	   </div>
@@ -244,10 +248,5 @@ jQuery(function($) {
 	  <div class="clear"> </div>
 	</div>
 </div>
-<!--<div class="copy-right">-->
-<!--			<p> test  <a href="" target="_blank">  Home </a></p>-->
-<!--</div>-->
-
-<!---->
 </body>
 </html>

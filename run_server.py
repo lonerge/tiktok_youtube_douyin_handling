@@ -1,10 +1,9 @@
-from gevent import pywsgi
-from gevent import monkey
-monkey.patch_all()
 import json
 import random
 import time
 import os
+import traceback
+
 import requests
 from flask import Flask, render_template, request, url_for, redirect
 from pymongo import MongoClient
@@ -14,36 +13,25 @@ import re
 import configparser
 import math
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
 
 app = Flask(__name__)
 # 限流
-limiter = Limiter(app,
-                 # key_func=get_remote_address,
-                  default_limits=["200 per day", "50 per hour"])
+limiter = Limiter(app, default_limits=["200 per day", "50 per hour"])
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
 api_config = config['Web_API']
 path_config = config['Path']
 if sys.argv[1] == 'test':
     client = MongoClient(host=path_config['Mongo_host_local'], port=int(path_config['Mongo_port']))
-    collection = client['handling_vedio']['vedios']
-    video_path = path_config['Video_path_windows']
-    error_path = path_config['Error_path_windows']
-elif sys.argv[1] == 'ten':
-    client = MongoClient(host=path_config['Mongo_host_local'], port=int(path_config['Mongo_port_ten']))
-    collection = client['handling_vedio']['vedios']
-    video_path = path_config['Video_path_ten']
-    error_path = path_config['Error_path_ten']
 else:
     client = MongoClient(host=path_config['Mongo_host_server'], port=int(path_config['Mongo_port']))
-    collection = client['handling_vedio']['vedios']
-    video_path = path_config['Video_path_server']
-    error_path = path_config['Error_path_server']
+collection = client['handling_vedio']['vedios']
+video_path = path_config['Video_path']
+error_path = path_config['Error_path']
+
 LOGIN = None
 PREDATA = None
-PROXY = {"http": 'socks5://43.156.63.82:9494', "https": 'socks5://43.156.63.82:9494'}
 USEFUL_NUM = None
 
 
@@ -161,37 +149,33 @@ def handling_video():
 
 @app.route('/download_video', methods=['POST'])
 def download_video():
-    if sys.argv[1] == 'test':
-        path = path_config['Web_video_path_windows']
-    elif sys.argv[1] == 'ten':
-        path = path_config['Web_video_path']
-    else:
-        path = path_config['Web_video_path_server']
+    path = path_config['video_path']
     video_url = request.form.get('video_url')
     video_id = request.form.get('video_id')
     video_name = video_id + '.mp4'
-    video_path = path + video_name
-    if os.path.exists(video_path):
+    file_path = path + video_name
+    if os.path.exists(file_path):
         print(f'下载: {video_id} 无需下载')
         return video_name
     else:
+        # video_url = video_url
         video_url = video_url.replace('https://', 'http://')
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'}
         for i in range(3):
             try:
                 if 'tiktok' in video_url or 'youtube' in video_url or 'google' in video_url:
-                    resp = requests.get(url=video_url, headers=headers, stream=True)
+                    resp = requests.get(url=video_url, headers=headers)
                 else:
-                    resp = requests.get(url=video_url, headers=headers, stream=True)
+                    resp = requests.get(url=video_url, headers=headers)
                 if resp.status_code < 300:
-                    with open(path + video_name, 'wb')as f:
+                    with open(file_path, 'wb')as f:
                         f.write(resp.content)
                     print(f'下载: {video_id} 成功! ')
                     return video_name
                 else:
                     continue
             except:
-                print(f'下载: {video_id} 失败, 开始重试')
+                print(f'下载: {video_id} 失败: {traceback.format_exc()}')
         return '下载失败!'
 
 
@@ -213,13 +197,7 @@ def refresh_login_pic():
 @app.route('/publish', methods=['POST'])
 def publish():
     global LOGIN
-    # if LOGIN:
-    if sys.argv[1] == 'test':
-        path = path_config['Web_video_path_windows']
-    elif sys.argv[1] == 'ten':
-        path = path_config['Web_video_path']
-    else:
-        path = path_config['Web_video_path_server']
+    path = path_config['video_path']
     video_id = request.form.get('video_id')
     video_datafrom = request.form.get('video_datafrom')
     account = request.form.get('account')
@@ -228,33 +206,30 @@ def publish():
     publish_platform = request.form.get('publish_platform')
     video_name = video_id + '.mp4'
     print(f'title: {title} account: {account} password: {password} publish: {publish_platform}')
-    if os.path.exists(path+video_name):
-        video_path = path + video_name
-    else:
-        video_path = LOGIN.video_path + video_name
-        video_url = request.form.get('video_url')
-        video_url = video_url.replace('https://', 'http://')
-        print(f'video_path: {video_path} video_url: {video_url}')
-        for i in range(3):
-            headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'}
-            try:
-                print(f'第{i+1}次下载视频')
-                if 'tiktok' in video_url or 'youtube' in video_url or 'google' in video_url:
-                    resp = requests.get(url=video_url, headers=headers, stream=True)
-                else:
-                    resp = requests.get(url=video_url, headers=headers, stream=True)
-                if resp.status_code < 300:
-                    with open(video_path, 'wb')as f:
-                        f.write(resp.content)
-                    print(f'下载视频完成')
-                    break
-                else:
-                    print(f'下载视频异常, 开始重试...')
-                    continue
-            except Exception as e:
-                print(f'下载视频异常: {e}')
+    video_url = request.form.get('video_url')
+    video_url = video_url.replace('https://', 'http://')
+    file_path = path+video_name
+    print(f'video_path: {video_path} video_url: {video_url}')
+    for i in range(3):
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36'}
+        try:
+            print(f'第{i+1}次下载视频')
+            if 'tiktok' in video_url or 'youtube' in video_url or 'google' in video_url:
+                resp = requests.get(url=video_url, headers=headers, stream=True)
+            else:
+                resp = requests.get(url=video_url, headers=headers, stream=True)
+            if resp.status_code < 300:
+                with open(file_path, 'wb')as f:
+                    f.write(resp.content)
+                print(f'下载视频完成')
+                break
+            else:
+                print(f'下载视频异常, 开始重试...')
                 continue
-    if os.path.exists(video_path):
+        except Exception as e:
+            print(f'下载视频异常: {e}')
+            continue
+    if os.path.exists(file_path):
         print(f'开始发布视频')
         try:
             if publish_platform == 'tiktok':
@@ -272,7 +247,7 @@ def publish():
                 else:
                     result = '账号或密码为空'
             else:
-                result = LOGIN.douyin_upload(video_path=video_path, title=title)
+                result = LOGIN.douyin_upload(video_path=file_path, title=title)
         except Exception as e:
             print(f'发布视频, 页面异常: {e}')
             result = '页面异常'
@@ -316,38 +291,26 @@ def hcaptcha():
 
 
 def kill_orphan_chrome():
-    num = 1
-    while True:
+    for i in range(2):
         if sys.argv[1] == 'test':
             break
         else:
-            if os.popen('ps -f --ppid 1 | grep chromedriver').read():
-                try:
+            try:
+                if os.popen('ps -f --ppid 1 | grep chromedriver').read():
                     os.system("ps -f --ppid 1 | grep chromedriver | awk '{print $2}' | xargs kill -9")
-                except:
-                    pass
-            if os.popen('ps -f --ppid 1 | grep chrome').read():
-                try:
+            except:
+                pass
+            try:
+                if os.popen('ps -f --ppid 1 | grep chrome').read():
                     os.system("ps -f --ppid 1 | grep chrome | awk '{print $2}' | xargs kill -9")
-                except:
-                    pass
-            if os.popen('ps -f --ppid 1 | grep chromedriver').read() == '' and os.popen(
-                    'ps -f --ppid 1 | grep chrome').read() == '':
-                break
-        num += 1
-        time.sleep(random.uniform(0.1, 0.2))
-        if num > 3:
-            break
+            except:
+                pass
+        time.sleep(random.uniform(0.3, 0.5))
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'ten':
-        # app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
-        # app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
-        server = pywsgi.WSGIServer((api_config['Host'], int(api_config['Port'])), app)
-        server.serve_forever()
-    elif sys.argv[1] == 'test':
+    if sys.argv[1] == 'test':
         app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
     else:
-        app.run(host=api_config['Server_host'], port=int(api_config['Port']))
+        app.run(host=api_config['Host'], port=int(api_config['Port']), threaded=True)
 

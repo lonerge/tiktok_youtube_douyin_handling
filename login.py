@@ -10,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 import os
 import configparser
+import undetected_chromedriver as uc
 
 
 config = configparser.ConfigParser()
@@ -24,20 +25,11 @@ class Login(object):
         self.wait = None
         self.arg = sys.argv[1]
         if self.arg == 'test':
-            self.video_path = path_config['Video_path_windows']
-            self.error_path = path_config['Error_path_windows']
             self.headless = False
-            self.chrome_path = path_config['Chrome_path']
-        elif self.arg == 'ten':
-            self.headless = True
-            self.video_path = path_config['Video_path_ten']
-            self.error_path = path_config['Error_path_ten']
-            self.chrome_path = path_config['Chrome_path_server']
         else:
             self.headless = True
-            self.video_path = path_config['Video_path_server']
-            self.error_path = path_config['Error_path_server']
-            self.chrome_path = path_config['Chrome_path_server']
+        self.video_path = path_config['Video_path']
+        self.error_path = path_config['Error_path']
 
         if login_config['Proxy_switch'] == 'False':
             self.proxy = None
@@ -74,31 +66,24 @@ class Login(object):
         ]
 
     def kill_orphan_chrome(self):
-        num = 1
-        while True:
+        for i in range(2):
             if sys.argv[1] == 'test':
                 try:
                     os.system(r"taskkill /f /im chromedriver.exe")
                 except:
                     pass
             else:
-                if os.popen('ps -f --ppid 1 | grep chromedriver').read():
-                    try:
+                try:
+                    if os.popen('ps -f --ppid 1 | grep chromedriver').read():
                         os.system("ps -f --ppid 1 | grep chromedriver | awk '{print $2}' | xargs kill -9")
-                    except:
-                        pass
-                if os.popen('ps -f --ppid 1 | grep chrome').read():
-                    try:
+                except:
+                    pass
+                try:
+                    if os.popen('ps -f --ppid 1 | grep chrome').read():
                         os.system("ps -f --ppid 1 | grep chrome | awk '{print $2}' | xargs kill -9")
-                    except:
-                        pass
-                if os.popen('ps -f --ppid 1 | grep chromedriver').read() == '' and os.popen(
-                        'ps -f --ppid 1 | grep chrome').read() == '':
-                    break
-            num += 1
-            time.sleep(0.2)
-            if num > 3:
-                break
+                except:
+                    pass
+            time.sleep(0.3)
 
     def is_element_exist_wait(self, wait, xpath):
         """
@@ -113,52 +98,22 @@ class Login(object):
         except:
             return False
 
-    def init_broswer(self, url, port):
+    def init_broswer(self, url):
         self.kill_orphan_chrome()
         opt = webdriver.ChromeOptions()
-        # 设置无头模式
-        if self.headless is True:
-            opt.add_argument("--headless")
-        else:
-            pass
         if self.proxy:
             opt.add_argument(f"--proxy-server={self.proxy}")
-        # 高版本chrome防止被识别
-        opt.add_argument('--disable-blink-features=AutomationControlled')
-        opt.add_argument("--lang=zh-CN")
-        # 无痕模式
-        opt.add_argument("--incognito")
-        opt.add_argument("--disable-extensions")
-        opt.add_argument("--mute-audio")
-        opt.add_argument("--window-size=1920,1080")
-        opt.add_argument("--start-maximized")
-        opt.add_argument("--no-sandbox")
-        opt.add_argument("--disable-dev-shm-usage")
-        opt.add_argument("--disable-gpu")
-        opt.add_argument(f"--remote-debugging-port={port}")
-        opt.add_argument("--disable-infobars")
-        opt.add_experimental_option("detach", True)
-        prefs = {"": ""}
-        prefs["credentials_enable_service"] = False
-        prefs["profile.password_manager_enabled"] = False
-        prefs["profile.managed_default_content_settings.images"] = 2
-        opt.add_experimental_option("prefs", prefs)  # 屏蔽'保存密码'提示框
-        # 实现每个账号对应一个浏览器
-        opt.add_argument('--user-data-dir=' + path_config['Chrome_log'] + str(port)+'_' + str(time.time()))
-        opt.add_argument("--no-first-run")
-        opt.add_argument('--no-default-browser-check')
-        opt.add_argument(f'--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36')
-        opt.add_experimental_option('excludeSwitches', ['enable-automation'])
-        opt.add_experimental_option('useAutomationExtension', False)
+
+        opt = uc.ChromeOptions()
+        opt.add_argument('--no-first-run')
+        opt.add_argument('--no-service-autorun')
+        opt.add_argument('--password-store=basic')
+        opt.add_argument('--disable-gpu')
+        user_data_dir = path_config['Chrome_log'] + str(time.time())
+        opt.add_argument('--user-data-dir=' + user_data_dir)
         print('chrome 正在启动', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        _browser = webdriver.Chrome(options=opt)
+        _browser = uc.Chrome(options=opt, version_main=int(path_config['chrome_version']), user_data_dir=user_data_dir, headless=self.headless)
         print('chrome 启动成功', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        # with open('stealth.min.js', mode='r') as f:
-        #     js = f.read()
-        # _browser.execute_cdp_cmd(
-        #     cmd_args={'source': js},
-        #     cmd="Page.addScriptToEvaluateOnNewDocument",
-        # )
         _browser.implicitly_wait(5)
         wait = WebDriverWait(_browser, timeout=5, poll_frequency=0.5)
         _browser.get(url)
@@ -166,45 +121,15 @@ class Login(object):
         self.wait = wait
         return _browser, wait
 
-    def init_broswer_popen(self, url, port):
-        self.kill_orphan_chrome()
-        if self.arg == 'test':
-            if self.proxy:
-                os.popen(f'{self.chrome_path} --remote-debugging-port={port} --proxy-server="{self.proxy}" --user-data-dir="{path_config["Chrome_log"]}{port+ "_"+ str(time.time())}" --disable-gpu --incognito --disable-extensions --window-size="1920,1080" --no-first-run --disable-dev-shm-usage --no-first-run --mute-audio --disable-infobars ')
-            else:
-                os.popen(f'{self.chrome_path} --remote-debugging-port={port} --user-data-dir="{path_config["Chrome_log"]}{port+ "_"+ str(time.time())}" --disable-gpu --incognito --disable-extensions --window-size="1920,1080" --no-first-run --disable-dev-shm-usage --no-first-run --mute-audio --disable-infobars ')
-        else:
-            if self.proxy:
-                os.popen(f'{self.chrome_path} --remote-debugging-port={port} --user-data-dir="{path_config["Chrome_log"]}{port+ "_"+ str(time.time())}" --proxy-server="{self.proxy}" --headless --disable-gpu --incognito --disable-extensions --window-size="1920,1080" --no-first-run --disable-dev-shm-usage --no-first-run --mute-audio --disable-infobars ')
-            else:
-                os.popen(
-                    f'{self.chrome_path} --remote-debugging-port={port} --user-data-dir="{path_config["Chrome_log"]}{port+ "_"+ str(time.time())}" --headless --disable-gpu --incognito --disable-extensions --window-size="1920,1080" --no-first-run --disable-dev-shm-usage --no-first-run --mute-audio --disable-infobars ')
-        opt = webdriver.ChromeOptions()
-        opt.add_experimental_option("debuggerAddress", f"127.0.0.1:{port}")
-        print('chrome 正在连接', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        _browser = webdriver.Chrome(options=opt)
-        print('chrome 连接成功', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        # with open('stealth.min.js', mode='r') as f:
-        #     js = f.read()
-        # _browser.execute_cdp_cmd(
-        #     cmd_args={'source': js},
-        #     cmd="Page.addScriptToEvaluateOnNewDocument",
-        # )
-        _browser.get(url)
-        self.broswer = _browser
-        self.wait = WebDriverWait(_browser, timeout=5, poll_frequency=0.5)
-        return _browser, self.wait
-
     def douyin_login(self):
         self.kill_orphan_chrome()
         url = 'https://www.douyin.com/'
         chrome = None
         wait = None
         for i in range(3):
-            port = f'{random.randint(6, 8)}{random.randint(1, 9)}{random.randint(1, 9)}{random.randint(1, 9)}'
-            print(f'第 {i+1} 次初始化chrome, 端口为:{port} ')
+            print(f'第 {i+1} 次初始化chrome ')
             try:
-                chrome, wait = self.init_broswer(url=url, port=port)
+                chrome, wait = self.init_broswer(url=url)
                 if 'douyin' in chrome.current_url:
                     print('chrome 正常状态...', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                     break
@@ -342,17 +267,13 @@ class Login(object):
 
     def tiktok_login(self, account, password):
         self.kill_orphan_chrome()
-        # url = 'https://www.tiktok.com/'
         url = 'https://bot.sannysoft.com/'
-        # url = 'https://www.tiktok.com/login/phone-or-email/email'
         chrome = None
         wait = None
         for i in range(3):
-            port = f'{random.randint(6, 8)}{random.randint(1, 9)}{random.randint(1, 9)}{random.randint(1, 9)}'
-            print(f'第 {i + 1} 次初始化chrome, 端口为:{port} ')
+            print(f'第 {i + 1} 次初始化chrome')
             try:
-                self.init_broswer(url=url, port=port)
-                # input('test:: ')
+                self.init_broswer(url=url)
                 if 'sannysoft' in self.broswer.current_url:
                     print('chrome 正常状态...', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                     break
@@ -415,16 +336,13 @@ class Login(object):
             return '初始化chrome失败! '
 
     def youtube_login(self, account, password):
-        # self.kill_orphan_chrome()
-        # url = 'https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true&continue=https%3A%2F%2Fwww.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Ddesktop%26hl%3Dzh-CN%26next%3Dhttps%253A%252F%252Fwww.youtube.com%252F&hl=zh-CN&ec=65620'
         url = 'https://accounts.google.com/ServiceLogin'
         chrome = None
         wait = None
         for i in range(3):
-            port = f'{random.randint(1, 4)}{random.randint(4, 8)}{random.randint(1, 9)}{random.randint(1, 9)}{random.randint(1, 9)}'
-            print(f'第 {i + 1} 次初始化chrome, 端口为:{port} ')
+            print(f'第 {i + 1} 次初始化chrome ')
             try:
-                self.init_broswer(url=url, port=port)
+                self.init_broswer(url=url)
                 if 'accounts' in self.broswer.current_url:
                     print('chrome 正常状态...', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                     break
@@ -474,28 +392,8 @@ class Login(object):
                         time.sleep(1)
                         continue
                 elif 'signin/rejected' in current_url:
-                    print(f'被检测, 重新初始化chrome... ', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                    self.broswer.quit()
-                    time.sleep(1)
-                    for i in range(3):
-                        port = f'{random.randint(6, 9)}{random.randint(1, 9)}{random.randint(1, 9)}{random.randint(1, 9)}'
-                        print(f'第 {i + 1} 次初始化chrome, 端口为:{port} ')
-                        try:
-                            chrome, wait = self.init_broswer_popen(url=url, port=port)
-                            if 'accounts' in chrome.current_url:
-                                print('chrome 正常状态...', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-                                break
-                            else:
-                                if chrome:
-                                    chrome.quit()
-                                continue
-                        except Exception as e:
-                            print(f'初始化chrome异常: {e}')
-                            if chrome:
-                                chrome.quit()
-                            continue
-                    # time.sleep(random.uniform(1, 2))
-                    continue
+                    print(f'被检测... ', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+                    return None
                 else:
                     print(f'第{i+1}次未找到input 密码框! ', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
                     continue

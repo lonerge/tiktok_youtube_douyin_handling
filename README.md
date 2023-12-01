@@ -1,7 +1,6 @@
 # 注意!!!:
-- 已取消演示服务器上搬运视频功能;
-- 开启tiktok/youtube爬虫,需要境外ip; 
-- 如果douyin爬虫失效,可手动更新cookies;
+- 开启tiktok/youtube爬虫, 需要境外ip; 
+- 如果douyin爬虫失效, 可手动更新cookies;
 
 
 # 预览及功能介绍
@@ -25,16 +24,16 @@
 # 启动程序(默认启动路径为项目内)
 - 开启指定视频爬虫(最好设置在crontab 四个小时执行一次)
 
-        测试: python3 -u timing_crawl.py test
+        本地测试: python3 -u timing_crawl.py test
     
-        服务器: python3 -u timing_crawl.py server
+        部署在服务器: python3 -u timing_crawl.py server
   
 
 - 开启web服务(开启之前,需要先开启爬虫)
 
-        测试: python3 -u run_server.py test
+        本地测试: python3 -u run_server.py test
         
-        服务器: python3 -u run_server.py server
+        部署在服务器: python3 -u run_server.py server
         
         服务器后台启动: nohup python3 -u run_server.py server &
   
@@ -103,8 +102,6 @@
         
         # API地址, 一般测试环境为0.0.0.0
         Host = 0.0.0.0
-        # 指定服务器 server API地址 可为0.0.0.0 也可指定 如:10.41.1.8
-        Server_host = 10.41.1.8
         # API默认运行端口
         Port = 5050
 
@@ -113,31 +110,23 @@
   
         # 测试环境 mongodb 地址 
         Mongo_host_local = 127.0.0.1
-        # 测试环境 mongodb 端口 
-        Mongo_port_ten = 27018
+
         # 服务器环境 mongodb 地址 
-        Mongo_host_server = 10.41.1.14
+        Mongo_host_server = 127.0.0.1
         # 服务器环境 mongodb 端口 
         Mongo_port = 27017
-        # chrome log 地址
-        Chrome_log = /tmp/chrome/
-        # 测试环境 视频保存地址 报错截屏地址
-        Video_path_windows = E:\\tmp\\douyin_login\\videos\\
-        Error_path_windows = E:\\tmp\\douyin_login\\error_pic\\
-        Video_path_ten = /data/logs/handling_video/videos/
-        Error_path_ten = /data/logs/handling_video/
-        # 服务器环境 视频保存地址 报错截屏地址
-        Video_path_server = /data/logs/pyvideos/videos/
-        Error_path_server = /data/logs/pyvideos/errors/
-        # 测试环境 Chrome 浏览器路径
-        Chrome_path = start chrome
-        # 服务器环境 Chrome 浏览器路径
-        Chrome_path_server = /usr/bin/google-chrome
-        # 测试环境 web 项目内视频地址 
-        Web_video_path_windows = E:\\codes\\Handling_Vedio\\static\\videos\\
-        Web_video_path = /home/ubuntu/Handling_Vedio/static/videos/
-        # 服务器环境 web 项目内视频地址 
-        Web_video_path_server = /data/code/pyvideos/static/videos/  
+
+        # chrome log 目录 这里是相对路径 可修改
+        Chrome_log = chrome_logs
+
+        视频保存地址 报错截屏地址 这里是相对路径 可修改
+        Video_path = static/videos/
+        Error_path = static/errors/
+        谷歌浏览器的版本号 必须
+        chrome_version = 119
+        
+
+         
 
 
 
@@ -156,11 +145,7 @@
         
         搬运页面(点击搬运按钮之后)包含功能: 登录区域(包含二维码登录, 账号密码登录, 编辑视频标题); 合成视频按钮(只有youtube的视频才需要合并); 发布按钮(点击即可发布视频)
     
-        生成一个迭代器, 包含当前所有可用的视频, 如果可用视频数量变化则重新初始化迭代器, 保证迭代器生成最新的视频
-
-        每次访问首页, 迭代器生成下一个视频信息, 然后根据信息渲染html页面, 实现每次访问都是不重复的视频
-    
-        后端使用flask, 前后端交互, 采用js的ajax POST请求传输数据(GET传输失败:未知原因)
+        后端使用flask, 前后端交互, 采用js的ajax POST请求传输数据
 
         
 
