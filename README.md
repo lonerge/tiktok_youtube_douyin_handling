@@ -4,7 +4,7 @@
 
 
 # 预览及功能介绍
-- 预览: http://43.156.63.82:5050/video_list
+- 预览: http://bosshr.top:5050/video_list
 - 无水印视频抓取: 包括tiktok视频; youtube视频; 抖音视频
 - 视频搬运: tiktok/youtube的视频搬运到抖音; 抖音的视频搬运到tiktok获取youtube平台
 - 搬运中的发布视频使用的selenium
@@ -42,19 +42,19 @@
 
 - 1.视频列表页面:
         
-        例如:http://43.156.63.82:5050/video_list
+        例如: http://bosshr.top:5050/video_list
         实现分页, 每页最多为50个, pagesize为固定50
         点击视频即可跳转到视频播放页面
             
 - 2.视频播放页面:
 
-        例如:http://43.156.63.82:5050/video?video_id=7056631930162400512
+        例如:http://bosshr.top:5050/video?video_id=7056631930162400512
         功能: 播放视频; 下载视频(下载到服务器或者本地) ; 搬运视频(点击跳转到搬运页面); 
         视频标签: 视频来源; 该视频的分类关键字
           
 - 3.视频搬运页面:
         
-        例如:http://43.156.63.82:5050/handling
+        例如:http://bosshr.top:5050/handling
         功能: 播放视频; 合成视频; 发布视频到指定平台
         发布视频: 来源是youtube或tiktok的视频 发布到抖音平台; 来源是抖音的视频,可选择发布到tiktok或者youtube平台(点击选择按钮即可选择要发布的平台)
         登录: 来源是youtube或tiktok的视频 发布到抖音平台 登录需扫描二维码登录(如果出现短信验证码, 后续需要输入);
