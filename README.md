@@ -16,8 +16,9 @@
 - flask(提供web服务功能)
 - selenium(登录及发布视频)
 - requests(请求库)
-- mongodb(存储视频数据)
 - threadpool(线程池,多线程请求)
+- mongodb(存储视频数据)
+- 默认 mongodb 数据库无账号密码; 必须建立数据库名: handling_vedio 表名: vedios
 
 
 
