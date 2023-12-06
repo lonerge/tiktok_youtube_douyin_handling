@@ -18,7 +18,7 @@
 - requests(请求库)
 - threadpool(线程池,多线程请求)
 - mongodb(存储视频数据)
-- 默认 mongodb 数据库无账号密码; 必须建立数据库名: handling_vedio 表名: vedios
+- 默认 mongodb 数据库无密码验证(有则自行修改); 必须建立数据库名: handling_vedio     表名: vedios
 
 
 
