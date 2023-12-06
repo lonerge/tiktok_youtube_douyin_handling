@@ -117,7 +117,7 @@
         Mongo_port = 27017
 
         # chrome log 目录 这里是相对路径 可修改
-        Chrome_log = chrome_logs
+        Chrome_log = chrome_logs/
 
         视频保存地址 报错截屏地址 这里是相对路径 可修改
         Video_path = static/videos/
