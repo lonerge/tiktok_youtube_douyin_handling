@@ -66,25 +66,25 @@
 # 配置文件(详情见config.ini配置)
 - Crawlers: 爬虫的配置项: 
 
-        # 抓取视频的关键字 以,分割; Keywords_english为tiktok/youtube采集关键字; Keywords_chinese为抖音采集关键字
-        Keywords_english = hot,happy,comedy,funny,beautiful girl
-        Keywords_chinese = 热门短视频,搞笑短视频,喜剧短视频,小姐姐短视频
+        # 抓取视频的关键字 ,分割
+        Keywords_english = hot
+        Keywords_chinese = 小姐姐
         # 是否开启某爬虫抓取
         Tiktok_crawler = True
         Youtube_crawler = True
         Douyin_crawler = True
         # 爬虫发送请求时最大线程数量
         Max_thread = 2
-        # #关键字搜索视频结果分页数,最多为3(默认最多抓取3页)
-        Max_page = 3
+        # # tiktok douyin 关键字搜索视频结果分页数,最多为3(默认最多抓取3页)
+        Max_page = 1
         # 是否使用代理(默认不开启,需要运行在境外ip机器上; 开启时需要配置下面代理详情)
         Proxy_switch = False
         # http/https协议都使用以下代理(示例代理不可用, 需要境外ip, 并设下面Use为True)
         Use_simple_proxy = False
-        Simple_proxy = 43.156.63.82:9494
+        Simple_proxy = 127.0.0.1:9494
         # socks5协议使用以下代理(示例代理不可用,需要境外ip, 并设下面Use为True)
         Use_socks5_proxy = False
-        Socks5_proxy = socks5://43.156.63.82:9494
+        Socks5_proxy = socks5://127.0.0.1:9494
 
 
 - Login : 模拟登录配置项:
@@ -93,10 +93,12 @@
         Proxy_switch = False
         # http/https协议都使用以下代理(示例代理不可用, 需要境外ip, 并设下面Use为True)
         Use_simple_proxy = False
-        Simple_proxy = http://43.156.63.82:9494
+        Simple_proxy = http://127.0.0.1:9494
         # socks5协议使用以下代理(示例代理不可用,需要境外ip, 并设下面Use为True)
         Use_socks5_proxy = False
-        Socks5_proxy = socks5://43.156.63.82:9494
+        Socks5_proxy = socks5://127.0.0.1:9494
+        # 发布视频时,最大等待时间, 默认为180s, 超出时间, 发布视频失败
+        Max_upload_time = 180
 
 
 - Web_API : web服务配置项:
