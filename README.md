@@ -4,12 +4,7 @@
 
 
 # 预览及功能介绍
-<details>
-<summary>预览及功能介绍</summary>
-
 - 预览: [video_list](http://173.242.115.60:5050/video_list)
-
-</details>
 - 无水印视频抓取: 包括tiktok视频; youtube视频; 抖音视频
 - 视频搬运: tiktok/youtube的视频搬运到抖音; 抖音的视频搬运到tiktok获取youtube平台
 - 搬运中的发布视频使用的selenium
