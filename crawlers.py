@@ -3,7 +3,6 @@ import time
 import datetime
 import requests
 import random
-from selenium import webdriver
 import sys
 from pymongo import MongoClient
 import re
@@ -12,6 +11,7 @@ from urllib.parse import quote
 import configparser
 import os
 import undetected_chromedriver as uc
+import douyin_video
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -262,6 +262,7 @@ class Crawlers(object):
                 res = None
         has_more = 0
         if res is not None:
+            print(f'res: {res}')
             results = []
             target = json.loads(res)
             if target['status_code'] < 300:
@@ -490,7 +491,6 @@ class Crawlers(object):
             with open('douyin_cookies.txt', 'r', encoding='utf-8') as file:
                 cookies = file.read()
         except:
-            cookies = None
             raise Exception(f'请复制抖音cookies到 douyin_cookies.txt!!!')
         headers = {
             'authority': 'www.douyin.com',
@@ -521,9 +521,14 @@ class Crawlers(object):
                         temp['video_title'] = re.search(r'(.+?)@', video['desc']).group(1)
                     else:
                         pass
+                    temp['video_h5_url'] = video['video']['play_addr']['url_list'][-1]
+                    try:
+                        # 提取抖音无水印视频
+                        temp['video_h5_url'] = douyin_video.get_douyin_origin_video(aweme_id=video['aweme_id'])['originVideo']
+                    except:
+                        continue
                     temp['video_playtime'] = None
                     temp['video_watch_num'] = video['statistics']['digg_count']
-                    temp['video_h5_url'] = video['video']['play_addr']['url_list'][-1]
                     temp['video_datafrom'] = '抖音'
                     temp['video_update_time'] = time.time()
                     temp['audio_url'] = None
@@ -594,10 +599,10 @@ if __name__ == '__main__':
     # for i in range(3):
     # crawler.youtube_crawler('funny video')
     #     time.sleep(3)
-    # crawler.tiktok_search_video('beautiful girls', offset=0)
+    crawler.tiktok_search_video('beautiful girls', offset=0)
     # crawler.tiktok_video_info('7166533046601059585')
     # crawler.tiktok_crawler('funny')
     # crawler.youtube_crawler('funny')
 
     # crawler.douyin_search_video('小姐姐短视频')
-    crawler.douyin_crawler('小姐姐短视频')
+    # crawler.douyin_crawler('小姐姐短视频')

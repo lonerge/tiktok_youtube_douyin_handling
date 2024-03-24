@@ -1,10 +1,11 @@
 # 注意!!!:
+- 更新抖音无水印视频提取, 需要安装nodejs环境
 - 开启tiktok/youtube爬虫, 需要境外ip; 
 - 如果douyin爬虫失效, 可手动更新cookies;
 
 
 # 预览及功能介绍
-- 预览: http://bosshr.top:5050/video_list
+- 预览: [video_list](http://173.242.115.60:5050/video_list)
 - 无水印视频抓取: 包括tiktok视频; youtube视频; 抖音视频
 - 视频搬运: tiktok/youtube的视频搬运到抖音; 抖音的视频搬运到tiktok获取youtube平台
 - 搬运中的发布视频使用的selenium
@@ -12,7 +13,8 @@
 
 
 # 运行环境:
-- python3
+- python3 nodejs
+- pyexecjs
 - flask(提供web服务功能)
 - selenium(登录及发布视频)
 - requests(请求库)
@@ -151,6 +153,5 @@
         后端使用flask, 前后端交互, 采用js的ajax POST请求传输数据
 
         
-
 
 

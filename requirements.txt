@@ -37,3 +37,6 @@ websockets==12.0
 Werkzeug==3.0.1
 wrapt==1.16.0
 wsproto==1.2.0
+fake_useragent
+pyexecjs
+loguru
