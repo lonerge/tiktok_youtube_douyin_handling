@@ -2,6 +2,7 @@
 - 更新抖音无水印视频提取, 需要安装nodejs环境
 - 开启tiktok/youtube爬虫, 需要境外ip; 
 - 如果douyin爬虫失效, 可手动更新cookies;
+- 需要的一些第三方库: requirements.txt
 
 
 # 预览及功能介绍
