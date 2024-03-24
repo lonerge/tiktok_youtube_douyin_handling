@@ -89,7 +89,10 @@ class Crawlers(object):
         # 先关键词搜索视频
         video_list = []
         for i in range(MAX_PAGE):
-            temp, has_more = self.tiktok_search_video(search_keywords, offset=12 * i)
+            try:
+                temp, has_more = self.tiktok_search_video(search_keywords, offset=12 * i)
+            except:
+                continue
             if has_more == 1:
                 for one in temp:
                     video_list.append(one)
@@ -144,7 +147,11 @@ class Crawlers(object):
 
     def youtube_crawler(self, search_keywords):
         self.youtube_results = []
-        video_list = self.youtube_search_video(search_keywords)
+        video_list = []
+        try:
+            video_list = self.youtube_search_video(search_keywords)
+        except:
+            pass
         new_video_list = []
         for video in video_list:
             video_id = video['video_id']
@@ -193,7 +200,10 @@ class Crawlers(object):
         self.douyin_results = []
         video_list = []
         for i in range(MAX_PAGE):
-            temp, has_more = self.douyin_search_video(search_keywords, offset=12 * i)
+            try:
+                temp, has_more = self.douyin_search_video(search_keywords, offset=12 * i)
+            except:
+                continue
             if has_more == 1:
                 for one in temp:
                     video_list.append(one)
