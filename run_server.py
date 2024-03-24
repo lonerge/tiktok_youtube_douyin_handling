@@ -98,8 +98,8 @@ def index():
         if return_data:
             del return_data['_id']
             video_url = return_data['video_url']
-            if return_data['video_datafrom'] == '抖音' or 'douyin' in video_url:
-                video_url = video_url.replace('https://', 'http://')
+            # if return_data['video_datafrom'] == '抖音' or 'douyin' in video_url:
+            #     video_url = video_url.replace('https://', 'http://')
             print('video_url: ', video_url)
             return render_template('home.html', data=json.dumps(return_data), origin_video_url=video_url)
         else:
