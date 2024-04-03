@@ -104,7 +104,7 @@ class Crawlers(object):
         for video in video_list:
             video_id = video['video_id']
             if self.collection.find_one({'video_id': video_id}) is None or (
-                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 5 * 60 * 60):
+                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 30 * 60):
                 new_video_list.append(video)
             else:
                 continue
@@ -156,7 +156,7 @@ class Crawlers(object):
         for video in video_list:
             video_id = video['video_id']
             if self.collection.find_one({'video_id': video_id}) is None or (
-                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 4 * 60 * 60):
+                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 30 * 60):
                 new_video_list.append(video)
             else:
                 continue
@@ -215,7 +215,7 @@ class Crawlers(object):
         for video in video_list:
             video_id = video['video_id']
             if self.collection.find_one({'video_id': video_id}) is None or (
-                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 5 * 60 * 60):
+                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 30 * 60):
                 new_video_list.append(video)
             else:
                 continue
