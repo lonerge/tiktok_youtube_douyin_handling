@@ -1,4 +1,5 @@
 # 注意!!!:
+- 项目仅供学习交流
 - 更新抖音无水印视频提取, 需要安装nodejs环境
 - 开启tiktok/youtube爬虫, 需要境外ip; 
 - 如果douyin爬虫失效, 可手动更新cookies;
