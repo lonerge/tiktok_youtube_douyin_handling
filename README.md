@@ -8,8 +8,8 @@
 # 预览及功能介绍
 - 预览: [video_list](http://185.212.58.40:5050/video_list)
 - 无水印视频抓取: 包括tiktok视频; youtube视频; 抖音视频
-- 视频搬运: tiktok/youtube的视频搬运到抖音; 抖音的视频搬运到tiktok获取youtube平台
-- 搬运中的发布视频使用的selenium
+- 视频发布: tiktok/youtube视频到抖音; 抖音视频到tiktok/youtube平台
+- 发布视频使用的selenium
 
 
 
@@ -56,7 +56,7 @@
         功能: 播放视频; 下载视频(下载到服务器或者本地) ; 搬运视频(点击跳转到搬运页面); 
         视频标签: 视频来源; 该视频的分类关键字
           
-- 3.视频搬运页面:
+- 3.视频发布页面:
         
         例如:http://bosshr.top:5050/handling
         功能: 播放视频; 合成视频; 发布视频到指定平台
