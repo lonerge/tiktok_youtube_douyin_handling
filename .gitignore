@@ -1,3 +1,4 @@
 *.json
 *.mp4
 temp.*
+.DS_Store

@@ -23,8 +23,13 @@ config.read('config.ini', encoding='utf-8')
 api_config = config['Web_API']
 path_config = config['Path']
 if sys.argv[1] == 'test':
+    # 本地测试
     client = MongoClient(host=path_config['Mongo_host_local'], port=int(path_config['Mongo_port']))
+elif path_config.get('Mongo_username', None) and path_config.get('Mongo_password', None):
+    # mongodb有认证
+    client = MongoClient(host=path_config['Mongo_host_server'], port=int(path_config['Mongo_port']), username=path_config['Mongo_username'], password=path_config['Mongo_password'], authSource='admin', authMechanism='SCRAM-SHA-256')
 else:
+    # mongodb无认证
     client = MongoClient(host=path_config['Mongo_host_server'], port=int(path_config['Mongo_port']))
 collection = client['handling_vedio']['vedios']
 video_path = path_config['Video_path']
@@ -201,6 +206,7 @@ def refresh_login_pic():
 
 @app.route('/publish', methods=['POST'])
 def publish():
+    return '演示服务器屏蔽发布功能! 请下载项目自行测试'
     global LOGIN
     path = path_config['video_path']
     video_id = request.form.get('video_id')

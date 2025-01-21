@@ -32,7 +32,11 @@ class Crawlers(object):
             'user-agent': 'com.ss.android.ugc.trill/2613 (Linux; U; Android 10; en_US; Pixel 4; Build/QQ3A.200805.001; Cronet/58.0.2991.0)'}
         if sys.argv[1] == 'test':
             client = MongoClient(host=path_config['Mongo_host_local'], port=int(path_config['Mongo_port']))
+        elif path_config.get('Mongo_username', None) and path_config.get('Mongo_password', None):
+            # mongodb有认证
+            client = MongoClient(host=path_config['Mongo_host_server'], port=int(path_config['Mongo_port']), username=path_config['Mongo_username'], password=path_config['Mongo_password'], authSource='admin', authMechanism='SCRAM-SHA-256')
         else:
+            # mongodb无认证
             client = MongoClient(host=path_config['Mongo_host_server'], port=int(path_config['Mongo_port']))
         self.db = client['handling_vedio']
         self.collection = self.db['vedios']
@@ -313,8 +317,9 @@ class Crawlers(object):
     def tiktok_video_info(self, video_id):
         openudid = ''.join(random.sample('0123456789abcdef', 16))
         uuid = ''.join(random.sample('01234567890123456', 16))
+        req_ticket = str(int(time.time() * 1000))
         ts = int(time.time())
-        url = f'https://api-h2.tiktokv.com/aweme/v1/feed/?aweme_id={video_id}&version_name=26.1.3&version_code=2613&build_number=26.1.3&manifest_version_code=2613&update_version_code=2613&{openudid}=6273a5108e49dfcb&uuid={uuid}&_rticket=1667123410000&ts={ts}&device_brand=Google&device_type=Pixel%204&device_platform=android&resolution=1080*1920&dpi=420&os_version=10&os_api=29&carrier_region=US&sys_region=US%C2%AEion=US&app_name=trill&app_language=en&language=en&timezone_name=America/New_York&timezone_offset=-14400&channel=googleplay&ac=wifi&mcc_mnc=310260&is_my_cn=0&aid=1180&ssmix=a&as=a1qwert123&cp=cbfhckdckkde1'
+        url = f'https://api-h2.tiktokv.com/aweme/v1/feed/?aweme_id={video_id}&version_name=37.0.4&version_code=370004&build_number=37.0.4&manifest_version_code=2023700040&update_version_code=2023700040&openudid={openudid}&uuid={uuid}&_rticket={req_ticket}&ts={ts}&device_brand=Redmi&device_type=Redmi%20K30%20Pro%20Zoom%20Edition&device_platform=android&resolution=1080*1920&dpi=420&os_version=10&os_api=29&carrier_region=US&sys_region=US%C2%AEion=US&app_name=trill&app_language=en&language=en&timezone_name=America/New_York&timezone_offset=-14400&channel=googleplay&ac=wifi&mcc_mnc=310260&is_my_cn=0&aid=1180&ssmix=a&as=a1qwert123&cp=cbfhckdckkde1'
         headers = self.tiktok_api_headers
         res = self.simple_get(url, headers)
         # input('test:::')
@@ -609,10 +614,10 @@ if __name__ == '__main__':
     # for i in range(3):
     # crawler.youtube_crawler('funny video')
     #     time.sleep(3)
-    crawler.tiktok_search_video('beautiful girls', offset=0)
-    # crawler.tiktok_video_info('7166533046601059585')
+    # crawler.tiktok_search_video('beautiful girls', offset=0)
+    # crawler.tiktok_video_info('7462168953985486098')
     # crawler.tiktok_crawler('funny')
-    # crawler.youtube_crawler('funny')
+    crawler.youtube_crawler('funny')
 
-    # crawler.douyin_search_video('小姐姐短视频')
+    # crawler.douyin_search_video('今日热点')
     # crawler.douyin_crawler('小姐姐短视频')
