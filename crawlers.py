@@ -92,44 +92,48 @@ class Crawlers(object):
         self.tiktok_results = []
         # 先关键词搜索视频
         video_list = []
-        for i in range(MAX_PAGE):
-            try:
-                temp, has_more = self.tiktok_search_video(search_keywords, offset=12 * i)
-            except:
-                continue
-            if has_more == 1:
-                for one in temp:
-                    video_list.append(one)
-            else:
-                for one in temp:
-                    video_list.append(one)
-                break
-        new_video_list = []
-        for video in video_list:
-            video_id = video['video_id']
-            if self.collection.find_one({'video_id': video_id}) is None or (
-                    time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 30 * 60):
-                new_video_list.append(video)
-            else:
-                continue
-        print(f'tiktok需要更新视频数量: {len(new_video_list)}')
-        if new_video_list:
-            params = [(None, {'video_id': video['video_id']}) for video in new_video_list]
-            pool = threadpool.ThreadPool(MAX_THREAD)
-            tasks = threadpool.makeRequests(self.tiktok_video_info, params, self.save_result_tiktok)
-            [pool.putRequest(req) for req in tasks]
-            pool.wait()
-            for video in new_video_list:
-                for task in tasks:
-                    if video['video_id'] == task.kwds['video_id']:
-                        for result in self.tiktok_results:
-                            if result['request_id'] == task.requestID:
-                                video['video_url'] = result['results']
-                            else:
-                                continue
-                    else:
-                        continue
-            for video in new_video_list:
+        # 旧版废弃
+        # for i in range(MAX_PAGE):
+        #     try:
+        #         temp, has_more = self.tiktok_search_video(search_keywords, offset=12 * i)
+        #     except:
+        #         continue
+        #     if has_more == 1:
+        #         for one in temp:
+        #             video_list.append(one)
+        #     else:
+        #         for one in temp:
+        #             video_list.append(one)
+        #         break
+
+        # 新版
+        video_list.extend(self.tiktok_search_video_remote(search_keywords))
+        # new_video_list = []
+        # for video in video_list:
+        #     video_id = video['video_id']
+        #     if self.collection.find_one({'video_id': video_id}) is None or (time.time() - self.collection.find_one({'video_id': video_id})['video_update_time'] > 30 * 60):
+        #         new_video_list.append(video)
+        #     else:
+        #         continue
+        print(f'tiktok需要更新视频数量: {len(video_list)}')
+        if video_list:
+            # 旧版废弃
+            # params = [(None, {'video_id': video['video_id']}) for video in new_video_list]
+            # pool = threadpool.ThreadPool(MAX_THREAD)
+            # tasks = threadpool.makeRequests(self.tiktok_video_info, params, self.save_result_tiktok)
+            # [pool.putRequest(req) for req in tasks]
+            # pool.wait()
+            # for video in new_video_list:
+            #     for task in tasks:
+            #         if video['video_id'] == task.kwds['video_id']:
+            #             for result in self.tiktok_results:
+            #                 if result['request_id'] == task.requestID:
+            #                     video['video_url'] = result['results']
+            #                 else:
+            #                     continue
+            #         else:
+            #             continue
+            for video in video_list:
                 video_id = video['video_id']
                 if 'video_url' in video.keys():
                     if video['video_url'] is not None and video['video_url'] != '':
@@ -311,6 +315,43 @@ class Crawlers(object):
                 return results, has_more
             else:
                 raise Exception(f'tiktok: 更新: {search_keywords} 失败!!! 接口返回异常')
+        else:
+            raise Exception(f'tiktok: 更新: {search_keywords} 失败!!! 请检查接口')
+
+    def tiktok_search_video_remote(self, search_keywords, pages=3):
+        print('search_keywords: ', search_keywords)
+        url = f'http://185.212.58.40:7758/tiktok_search'
+        headers = {
+            "Content-Type": "application/json",
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
+            'cookie': "token=dongdonglongbbb@gmail.com"
+        }
+        data = {"keyword": search_keywords, "sort": 0, "platform": "tiktok", "pages": pages}
+        res = self.simple_post(url=url, headers=headers, data_json=json.dumps(data))
+        if res is not None:
+            print(f'res: {res}')
+            results = []
+            target = json.loads(res)
+            for video in target['data']:
+                temp = {'keywords': search_keywords, 'video_id': video['video_id'], 'video_pic': video['cover'],
+                        'video_title': video['description']
+                        }
+                if re.search(r'(.+?)#', video['description']):
+                    temp['video_title'] = re.search(r'(.+?)#', video['description']).group(1)
+                elif re.search(r'(.+?)@', video['description']):
+                    temp['video_title'] = re.search(r'(.+?)@', video['description']).group(1)
+                else:
+                    pass
+                temp['video_playtime'] = None
+                temp['video_watch_num'] = video['play_count']
+                temp['video_h5_url'] = video['download_no_watermark_addr']
+                temp['video_url'] = video['download_no_watermark_addr']
+                temp['video_datafrom'] = 'tiktok'
+                temp['video_update_time'] = time.time()
+                temp['audio_url'] = None
+                print(temp)
+                results.append(temp)
+            return results
         else:
             raise Exception(f'tiktok: 更新: {search_keywords} 失败!!! 请检查接口')
 
@@ -615,9 +656,10 @@ if __name__ == '__main__':
     # crawler.youtube_crawler('funny video')
     #     time.sleep(3)
     # crawler.tiktok_search_video('beautiful girls', offset=0)
+    # crawler.tiktok_search_video_remote('beautiful girls')
     # crawler.tiktok_video_info('7462168953985486098')
-    # crawler.tiktok_crawler('funny')
-    crawler.youtube_crawler('funny')
+    crawler.tiktok_crawler('love')
+    # crawler.youtube_crawler('funny')
 
     # crawler.douyin_search_video('今日热点')
     # crawler.douyin_crawler('小姐姐短视频')
