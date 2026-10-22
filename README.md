@@ -1,3 +1,5 @@
+**语言：简体中文 | [English](README_ENG.md) | [Tiếng Việt](README_VN.md)**
+
 # 🚨 注意!!! 🚨
 > **项目仅供学习交流**  
 > **更新内容：**  

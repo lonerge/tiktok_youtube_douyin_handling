@@ -1,3 +1,5 @@
+**Ngôn ngữ: [简体中文](README.md) | [English](README_ENG.md) | Tiếng Việt**
+
 # 🚨 LƯU Ý!!! 🚨
 > **Dự án chỉ dùng cho mục đích học tập và giao lưu**  
 > **Cập nhật:**  
@@ -200,4 +202,4 @@ chrome_version = 119
 
 - Backend sử dụng Flask, tương tác frontend-backend sử dụng yêu cầu AJAX POST của JavaScript để truyền dữ liệu.
 
---- 
+---

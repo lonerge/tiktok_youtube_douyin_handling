@@ -1,3 +1,5 @@
+**Language: [简体中文](README.md) | English | [Tiếng Việt](README_VN.md)**
+
 # 🚨 ATTENTION!!! 🚨
 > **Project for learning and communication purposes only**  
 > **Updates:**  
