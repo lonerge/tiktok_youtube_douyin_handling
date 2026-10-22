@@ -33,6 +33,22 @@
 
 ---
 
+# 📦 安装与凭据配置
+
+```bash
+python3 -m pip install -r requirements.txt
+cp config.example.ini config.ini
+cp douyin_cookies.example.txt douyin_cookies.txt
+cp tiktok_cookies.example.json tiktok_cookies.json
+```
+
+- `douyin_cookies.txt` 和 `tiktok_cookies.json` 仅用于本地运行，已被 Git 忽略。请填入自己的有效会话信息，切勿提交、粘贴到 Issue 或写入日志。
+- Cookie 也可通过 `DOUYIN_COOKIE`、`TIKTOK_COOKIE` 环境变量提供；`DOUYIN_COOKIES_FILE` 和 `TIKTOK_COOKIES_FILE` 可指定本地文件路径。环境变量优先。
+- TikTok 远程搜索需要 `TIKTOK_REMOTE_API_TOKEN`，YouTube 搜索需要 `YOUTUBE_API_KEY`；如需提供 YouTube Cookie，请使用可选的 `YOUTUBE_COOKIE` 环境变量。
+- 如果凭据曾经提交到仓库或公开，请先在相应平台撤销或刷新会话。新增忽略规则不能从既有 Git 历史或其他克隆中删除已公开的凭据。
+
+---
+
 # 🚀 启动程序
 
 ### 1. 开启指定视频爬虫
@@ -47,9 +63,10 @@
       ```
 
 ### 2. 开启 Web 服务（确保先开启爬虫）
-- **本地测试：**  
+- **本地测试：**
   ```bash
   python3 -u run_server.py test
+  ```
 
 # 🌐 Web 页面
 

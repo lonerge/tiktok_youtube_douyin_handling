@@ -1,0 +1,2 @@
+# Copy this file to douyin_cookies.txt, then replace this comment with the complete Cookie header value.
+# Alternatively, set DOUYIN_COOKIE or DOUYIN_COOKIES_FILE in the environment.

@@ -216,7 +216,7 @@ def publish():
     title = request.form.get('title', ' ')
     publish_platform = request.form.get('publish_platform')
     video_name = video_id + '.mp4'
-    print(f'title: {title} account: {account} password: {password} publish: {publish_platform}')
+    print(f'title: {title} account: {account} publish: {publish_platform}')
     video_url = request.form.get('video_url')
     video_url = video_url.replace('https://', 'http://')
     file_path = path+video_name
@@ -324,4 +324,3 @@ if __name__ == '__main__':
         app.run(host=api_config['Host'], port=int(api_config['Port']), debug=True)
     else:
         app.run(host=api_config['Host'], port=int(api_config['Port']), threaded=True)
-

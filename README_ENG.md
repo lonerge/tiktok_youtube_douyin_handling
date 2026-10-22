@@ -33,6 +33,22 @@
 
 ---
 
+# 📦 Installation and Credential Configuration
+
+```bash
+python3 -m pip install -r requirements.txt
+cp config.example.ini config.ini
+cp douyin_cookies.example.txt douyin_cookies.txt
+cp tiktok_cookies.example.json tiktok_cookies.json
+```
+
+- `douyin_cookies.txt` and `tiktok_cookies.json` are for local use only and are ignored by Git. Add your own current session values and never commit them, include them in issues, or write them to logs.
+- Cookies can also be supplied through `DOUYIN_COOKIE` and `TIKTOK_COOKIE`. Use `DOUYIN_COOKIES_FILE` and `TIKTOK_COOKIES_FILE` to select local paths; environment variables take precedence.
+- TikTok remote search requires `TIKTOK_REMOTE_API_TOKEN`, and YouTube search requires `YOUTUBE_API_KEY`. `YOUTUBE_COOKIE` is optional when a YouTube Cookie header is needed.
+- If a credential was committed or exposed, revoke or refresh it with the provider first. Ignore rules do not remove data from existing Git history or cloned repositories.
+
+---
+
 # 🚀 Starting the Program
 
 ### 1. Start Specific Video Crawler
@@ -50,6 +66,7 @@
 - **Local Testing:**  
   ```bash
   python3 -u run_server.py test
+  ```
 
 # 🌐 Web Pages
 
@@ -200,4 +217,4 @@ chrome_version = 119
 
 - Backend uses Flask, frontend-backend interaction uses JavaScript AJAX POST requests for data transmission.
 
---- 
+---

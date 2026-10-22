@@ -2,3 +2,7 @@
 *.mp4
 temp.*
 .DS_Store
+.env
+douyin_cookies.txt
+tiktok_cookies.json
+!tiktok_cookies.example.json

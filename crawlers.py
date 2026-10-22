@@ -12,6 +12,7 @@ import configparser
 import os
 import undetected_chromedriver as uc
 import douyin_video
+from credentials import add_optional_cookie_header, get_required_env, load_douyin_cookie, load_tiktok_cookie_header
 
 config = configparser.ConfigParser()
 config.read('config.ini', encoding='utf-8')
@@ -46,13 +47,21 @@ class Crawlers(object):
         self.tiktok_results = []
         self.douyin_results = []
         self.arg = sys.argv[1]
+        self.tiktok_cookies_file = os.environ.get('TIKTOK_COOKIES_FILE', crawlers_config.get('Tiktok_cookies_file', 'tiktok_cookies.json'))
+        self.douyin_cookies_file = os.environ.get('DOUYIN_COOKIES_FILE', crawlers_config.get('Douyin_cookies_file', 'douyin_cookies.txt'))
+        self.request_timeout = (
+            crawlers_config.getfloat('Request_connect_timeout', fallback=5.0),
+            crawlers_config.getfloat('Request_read_timeout', fallback=20.0),
+        )
         if crawlers_config['Proxy_switch'] == 'False':
             self.proxy = None
         elif crawlers_config['Use_socks5_proxy'] == 'True':
             self.proxy = {"http": crawlers_config['Socks5_proxy'], "https": crawlers_config['Socks5_proxy']}
         elif crawlers_config['Use_simple_proxy'] == 'True':
-            self.proxy = {"http": 'http://' + crawlers_config['Socks5_proxy'],
-                          "https": 'https://' + crawlers_config['Socks5_proxy']}
+            simple_proxy = crawlers_config['Simple_proxy']
+            if '://' not in simple_proxy:
+                simple_proxy = 'http://' + simple_proxy
+            self.proxy = {"http": simple_proxy, "https": simple_proxy}
         else:
             self.proxy = None
 
@@ -76,7 +85,7 @@ class Crawlers(object):
         if len(cookies) > 0:
             try:
                 _browser.quit()
-                with open('tiktok_cookies.json', 'w') as f:
+                with open(self.tiktok_cookies_file, 'w', encoding='utf-8') as f:
                     f.write(json.dumps(cookies))
             except:
                 pass
@@ -254,7 +263,7 @@ class Crawlers(object):
         self.tiktok_results.append({'request_id': request.requestID, 'results': result})
 
     def tiktok_search_video(self, search_keywords, offset=0):
-        cookiestr = "tt_csrf_token=poZiJA2w-g7ubYxO-IPYptHs43-fevP82K6c; tt_chain_token=LV3vyP9xkzu1olcUYxoMPA==; csrf_session_id=3c385bce12441f6a9adcb2b02b5e5dae; passport_csrf_token=13925ec1d3411be9048f73be0f660a95; passport_csrf_token_default=13925ec1d3411be9048f73be0f660a95; s_v_web_id=verify_lojksyop_PltyvHfO_6w5N_4DwS_AewM_sS6alf5MtDVD; multi_sids=7169356242610357254%3Af0585c4b10a9490c77eb0c414da470d4; cmpl_token=AgQQAPO8F-RO0rNARSMFN90__yRRexJef4A3YNODxQ; passport_auth_status=8dba23d8f1a6f74eb79aafed4c6e10fa%2C; passport_auth_status_ss=8dba23d8f1a6f74eb79aafed4c6e10fa%2C; sid_guard=f0585c4b10a9490c77eb0c414da470d4%7C1699110824%7C15552000%7CThu%2C+02-May-2024+15%3A13%3A44+GMT; uid_tt=afcd0f90ff8631face19e3f8a187453648b65e7c99ecafec77e51b179432c6a4; uid_tt_ss=afcd0f90ff8631face19e3f8a187453648b65e7c99ecafec77e51b179432c6a4; sid_tt=f0585c4b10a9490c77eb0c414da470d4; sessionid=f0585c4b10a9490c77eb0c414da470d4; sessionid_ss=f0585c4b10a9490c77eb0c414da470d4; sid_ucp_v1=1.0.0-KGMyNGM5ZmQ1NjE5MjE5MTM1MDI4MDVkZmMzNGQyNDA2YzQyOGFiY2MKHwiGiJToyPCqv2MQqL-ZqgYYswsgDDCDlvubBjgIQBIQAxoGbWFsaXZhIiBmMDU4NWM0YjEwYTk0OTBjNzdlYjBjNDE0ZGE0NzBkNA; ssid_ucp_v1=1.0.0-KGMyNGM5ZmQ1NjE5MjE5MTM1MDI4MDVkZmMzNGQyNDA2YzQyOGFiY2MKHwiGiJToyPCqv2MQqL-ZqgYYswsgDDCDlvubBjgIQBIQAxoGbWFsaXZhIiBmMDU4NWM0YjEwYTk0OTBjNzdlYjBjNDE0ZGE0NzBkNA; store-idc=alisg; store-country-code=sg; store-country-code-src=uid; tt-target-idc=alisg; tt-target-idc-sign=aL8uKtxviSyE5Urayg680oYvSQPlHCptrUNu0A50vNQtWjxDn4k0qL-IzEX_F4uVsDIH11h4Ld7xteVoPEN7X7j5TpZp2AeEw_xdP6-J6kGm74x_TW9Ij_I3lY3AFJZ0MXNRy_cIwqzy_AB1AfqtHlGTJ5cBi2x7vLVYGH-cRklp2purLxVRb7ofeJHQpvLhORGDpzCBdxuMjKpCDB992PzCMUCmyyibEyxIFy_TUZXquRhmcIkfRoVAbq5TwsdA6W2QpAyaN8ZS1MOkSpBqXMO8U6nF89XZnB49yiC_4YEC7x09_LUw_Uj9-idt6McglSyxzzEMNzShHjALyWNhEh-Y0sAsghC-R1yvn6Wl0-99AjqtiGl47AaKBeshO0J2hC_ojih5sqQUKgjSA2VZDatSRSHkNp535QMMUwVj_WTX7uSxwZpVPYkcxdz82kiC5Y0ayiA0YBDh8l0wpwNzo9jei5k53k5ojd3RsRkT6oYD2eFoUiDmcDH_CKf_-YVN; ttwid=1%7CPslqeUeyVJmPPQ_m2XdO-inB7WkSqW2h4e4P_ZxGZeE%7C1700471632%7C1f004ba9a4192e255a3ae80910ca98fc48f925429cd67d5b589b4eacbb8caa6a; msToken=nUPQqImtDM_NQKZgj14YiSn9x7sxb4MXPRmXJMP_0TK0jJvblzEEiTafq9tZclma4bfTjqX13vgK-TtsF1v1yP-Gm9kOpenFhlDPiC-1kyhH85JV8iPiKKIpPkUyn2D820hIe0LXf_mstVI=; odin_tt=7fa11e3dd2ce551f6d7a6aad704d6109f70424f6a6bf1c944e4d98b28535f26140e2f6f9eb8e4b5a1e719f71f52036e62ce8ddf8f49376ef581420643b8b0cb3595e9d0213e4ac88f9c1aa7a8569eb5e"
+        cookiestr = load_tiktok_cookie_header(self.tiktok_cookies_file)
         keywords = search_keywords
         search_keywords = quote(search_keywords, safe='')
         print('search_keywords: ', search_keywords)
@@ -324,8 +333,8 @@ class Crawlers(object):
         headers = {
             "Content-Type": "application/json",
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
-            'cookie': "token=dongdonglongbbb@gmail.com"
         }
+        headers['cookie'] = f'token={get_required_env("TIKTOK_REMOTE_API_TOKEN")}'
         data = {"keyword": search_keywords, "sort": 0, "platform": "tiktok", "pages": pages}
         res = self.simple_post(url=url, headers=headers, data_json=json.dumps(data))
         if res is not None:
@@ -387,9 +396,8 @@ class Crawlers(object):
             return None
 
     def youtube_search_video(self, search_keywords):
-        url = 'https://www.youtube.com/youtubei/v1/search?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8&prettyPrint=false'
+        url = f'https://www.youtube.com/youtubei/v1/search?key={get_required_env("YOUTUBE_API_KEY")}&prettyPrint=false'
         headers = {
-            'cookie': 'GPS=1; YSC=yqtzdPPcyKw; VISITOR_INFO1_LIVE=nOLEdqeSGwM; PREF=tz=Asia.Shanghai&f6=40000000; ST-cbjpxi=oq=funny&gs_l=youtube.12.0.0i512i433k1j0i512i433i131k1l4j0i512i433k1j0i512i3k1j0i512k1j0i512i433k1l2j0i512k1l4.9687.10621.0.16257.7.7.0.0.0.0.331.650.3-2.4.0....0...1ac.1j4.64.youtube..3.2.650.0..0i433i131k1.325.fYjIXqBJKd4&itct=CA0Q7VAiEwi588CKv5P7AhXQ_TgGHUB3BNI%3D&csn=MC4wMzU2OTczOTgwOTM3NTg0OQ..&endpoint=%7B%22clickTrackingParams%22%3A%22CA0Q7VAiEwi588CKv5P7AhXQ_TgGHUB3BNI%3D%22%2C%22commandMetadata%22%3A%7B%22webCommandMetadata%22%3A%7B%22url%22%3A%22%2Fresults%3Fsearch_query%3Dfunny%2Bvideo%22%2C%22webPageType%22%3A%22WEB_PAGE_TYPE_SEARCH%22%2C%22rootVe%22%3A4724%7D%7D%2C%22searchEndpoint%22%3A%7B%22query%22%3A%22funny%20video%22%7D%7D',
             'authority': 'www.youtube.com',
             'accept': '*/*',
             'accept-language': 'zh-CN,zh;q=0.9',
@@ -398,6 +406,7 @@ class Crawlers(object):
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36',
             'x-goog-visitor-id': 'CgtuT0xFZHFlU0d3TSi09ZGbBg%3D%3D'
         }
+        add_optional_cookie_header(headers, 'YOUTUBE_COOKIE')
         country = random.choice(['US', 'SG', 'JP'])
         ip = random.choice(['172.53.173.232', '172.105.229.161', '182.125.229.161', '192.53.173.232'])
         data = {"context": {
@@ -492,10 +501,10 @@ class Crawlers(object):
 
     def youtube_video_info(self, video_id):
         headers = {
-            'cookie': 'VISITOR_INFO1_LIVE=9qZVrzB27uI; PREF=f4=4000000&tz=Asia.Shanghai; _ga=GA1.2.621834420.1648121145; _gcl_au=1.1.1853038046.1648121145; NID=511=Zc1APdmEbCD-iqVNVgI_vD_0S3LVI3XSfl-wUZEvvMU2MLePFKsQCaKUlUtchHSg-kWEVMGOhWUbxpQMwHeIuLjhxaslwniMh1OsjVfmOeTfhpwcRYpMgqpZtNQ7qQApY21xEObCvIez6DCMbjRhRQ5P7siOD3X87QX0CFyUxmY; OTZ=6430350_24_24__24_; GPS=1; YSC=0E115KqM_-I; GOOGLE_ABUSE_EXEMPTION=ID=d02004902c3d0f4d:TM=1648620854:C=r:IP=47.57.243.77-:S=YmZXPW7dxbu83bDuauEpXpE; CONSISTENCY=AGDxDeNysJ2boEmzRP4v6cwgg4NsdN4-FYQKHCGhA0AeW1QjFIU1Ejq1j8l6lwAc6c-pYTJiSaQItZ1M6QeI1pQ3wictnWXTOZ6_y8EKlt0Y_JdakwW6srR39-NLuPgSgXrXwtS0XTUGXpdnt4k3JjQ',
             'referer': 'https://www.youtube.com/results?search_query=jk%E7%BE%8E%E5%A5%B3',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.84 Safari/537.36'
         }
+        add_optional_cookie_header(headers, 'YOUTUBE_COOKIE')
         url = f'https://www.youtube.com/watch?v={video_id}'
         response = self.simple_get(url=url, headers=headers)
         if response is not None:
@@ -542,12 +551,7 @@ class Crawlers(object):
         search_keywords = quote(search_keywords)
         print(search_keywords)
         url = f'https://www.douyin.com/aweme/v1/web/search/item/?device_platform=webapp&aid=6383&channel=channel_pc_web&search_channel=aweme_video_web&sort_type=0&publish_time=0&keyword={search_keywords}&search_source=switch_tab&query_correct_type=1&is_filter_search=0&from_group_id=&offset={offset}&count=20&pc_client_type=1&version_code=170400&version_name=17.4.0&cookie_enabled=true&screen_width=2560&screen_height=1440&browser_language=zh-CN&browser_platform=Win32&browser_name=Chrome&browser_version=107.0.0.0&browser_online=true&engine_name=Blink&engine_version=107.0.0.0&os_name=Windows&os_version=10&cpu_core_num=12&device_memory=8&platform=PC&downlink=10&effective_type=4g&round_trip_time=0&webid=7163531063863133732'
-        try:
-            # 读取抖音cookies
-            with open('douyin_cookies.txt', 'r', encoding='utf-8') as file:
-                cookies = file.read()
-        except:
-            raise Exception(f'请复制抖音cookies到 douyin_cookies.txt!!!')
+        cookies = load_douyin_cookie(self.douyin_cookies_file)
         headers = {
             'authority': 'www.douyin.com',
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36',
@@ -600,10 +604,10 @@ class Crawlers(object):
     def simple_post(self, url, data_json, headers):
         for i in range(5):
             try:
+                request_options = {'url': url, 'headers': headers, 'data': data_json, 'timeout': self.request_timeout}
                 if self.proxy:
-                    res = requests.post(url=url, headers=headers, data=data_json, proxies=self.proxy)
-                else:
-                    res = requests.post(url=url, headers=headers, data=data_json)
+                    request_options['proxies'] = self.proxy
+                res = requests.post(**request_options)
                 if res.status_code < 300:
                     print(f'请求 {url} 成功! {res.status_code}')
                     return res.text
@@ -620,21 +624,17 @@ class Crawlers(object):
     def simple_get(self, url, headers, cookies=None):
         for i in range(5):
             try:
+                request_options = {'url': url, 'headers': headers, 'timeout': self.request_timeout}
                 if self.proxy:
-                    if cookies:
-                        res = requests.get(url=url, headers=headers, cookies=cookies)
-                    else:
-                        res = requests.post(url=url, headers=headers, proxies=self.proxy)
-                else:
-                    if cookies:
-                        res = requests.get(url=url, headers=headers, cookies=cookies)
-                    else:
-                        res = requests.get(url=url, headers=headers)
+                    request_options['proxies'] = self.proxy
+                if cookies is not None:
+                    request_options['cookies'] = cookies
+                res = requests.get(**request_options)
                 if res.status_code < 300:
                     print(f'请求 {url} 成功! {res.status_code}')
                     return res.text
                 else:
-                    print(f'请求 {url} 响应异常 状态码为: {res.status_code} {res.text}, 开始重试, 重试次数:{i + 1}')
+                    print(f'请求 {url} 响应异常 状态码为: {res.status_code}, 开始重试, 重试次数:{i + 1}')
                     time.sleep(random.uniform(0.5, 1))
                     continue
             except Exception as e:

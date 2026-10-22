@@ -24,6 +24,6 @@ if __name__ == '__main__':
 
     agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
 
-    cookie = 'csrf_session_id=d7ee7cb6dd02be8dcbc16a59d8622bed; __live_version__=%221.1.1.7793%22; webcast_local_quality=null; live_use_vvc=%22false%22; bd_ticket_guard_client_web_domain=2; store-region=cn-gd; store-region-src=uid; ttwid=1%7Cew2pGD0-_59z9Q2hDGpEGZla0DwYQpmz-CRd8r7I8qo%7C1709894493%7C4384e326b20a95134bf9ed9eb679aa6d2f8d19bb079b12865e16e05b89e0b2ff; douyin.com; device_web_cpu_core=8; device_web_memory_size=8; xgplayer_device_id=75207733943; xgplayer_user_id=779808914697; xg_device_score=7.568284552297575; dy_swidth=1440; dy_sheight=900; FORCE_LOGIN=%7B%22videoConsumedRemainSeconds%22%3A180%7D; passport_csrf_token=d2493f8362f4c7d54bf28282c2b563bf; passport_csrf_token_default=d2493f8362f4c7d54bf28282c2b563bf; s_v_web_id=verify_lw66uj9x_y69HTWBr_NOK0_4O0k_As0k_vZiOREH3U5SC; odin_tt=c30f2f3f8ce5a3d66818390cc2ce531dc578acc581b43601e97b9cd9d737b1b5642d163d93173928f0c69279cd5a3a2a978e9d059378f7711cc3707b169224739e58938a491b6d6b1972cc898c2bd370; download_guide=%223%2F20240514%2F0%22; pwa2=%220%7C0%7C3%7C0%22; strategyABtestKey=%221716191929.837%22; volume_info=%7B%22isUserMute%22'
+    cookie = cookie_str
 
     print(f'res: {get_ab(target_url=url, user_agent=agent, cookie_str=cookie)}')
